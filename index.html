@@ -207,7 +207,29 @@ hr{border:0;border-top:1px solid #e5e9ee;margin:20px 0}
 </main>
 </section>
 
-<footer>
+<section id="adminDashboard" class="hidden">
+  <div class="container">
+    <div class="panel">
+      <h2>SOKOKUU Admin Dashboard</h2>
+      <p>Manage sellers, products and marketplace activity.</p>
+
+      <div class="grid">
+        <div class="panel">
+          <h3>Seller Applications</h3>
+          <p id="adminSellerCount">Loading...</p>
+          <div id="adminSellers"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Product Listings</h3>
+          <p id="adminProductCount">Loading...</p>
+          <div id="adminProducts"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ <footer>
 <div class="logo" style="color:white">SOKO<span>KUU</span> 🇰🇪</div>
 <p>Buy. Sell. Grow Together. Across Kenya.</p>
 <p>Free basic seller registration. Sellers choose their own customer payment methods and delivery terms.</p>
