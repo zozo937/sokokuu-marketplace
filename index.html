@@ -176,4 +176,14 @@ function searchProducts(){
 document.getElementById("searchInput").addEventListener("input",updateProducts);
 </script>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    'https://glszdyzkrbrypxnpbwav.supabase.co',
+    'sb_publishable_Fz2SigSjE22xseSiRfbJNg_ovPeXBAS'
+  );
+
+  console.log('SOKOKUU database connection initialized');
+</script>
 </html>
