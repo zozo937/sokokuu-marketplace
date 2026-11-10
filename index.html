@@ -3,488 +3,177 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#10243a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SOKOKUU - Kenya's Nationwide Marketplace. Buy, sell and grow together across Kenya.">
 <title>SOKOKUU | Kenya's Nationwide Marketplace</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--navy:#10243a;--orange:#f28c28;--green:#16834b}
+:root{--navy:#102b4e;--orange:#f28c28;--green:#16834a;--light:#f5f7fa;--text:#253247}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9;color:#243244}
-header{background:white;padding:17px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
-.logo{font-size:29px;font-weight:900;color:var(--navy)}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:#fff}
+header{background:var(--navy);color:white;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.logo{font-size:27px;font-weight:900;letter-spacing:1px}
 .logo span{color:var(--orange)}
-nav{background:var(--navy);padding:13px 5%;display:flex;gap:22px;flex-wrap:wrap}
+.tagline{font-size:11px;color:#e8edf4;margin-top:3px}
+nav{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 nav a{color:white;text-decoration:none;font-size:14px}
-button,.btn{background:var(--orange);border:0;color:white;padding:12px 18px;border-radius:6px;cursor:pointer;font-weight:bold;text-decoration:none;display:inline-block}
-button:hover,.btn:hover{opacity:.88}
-.hero{background:linear-gradient(110deg,#10243a,#205b4a);color:white;padding:55px 7%;margin:20px auto;max-width:1200px;border-radius:12px}
+nav a:hover{color:#ffb45e}
+.sell-btn,.primary-btn{background:var(--orange);color:#172b43;padding:11px 18px;border:0;border-radius:6px;font-weight:bold;text-decoration:none;cursor:pointer}
+.hero{background:linear-gradient(110deg,#102b4e 0%,#17456b 75%,#16834a 100%);color:white;padding:65px 7%;text-align:center}
 .hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 15px}
-.hero p{line-height:1.7;max-width:650px}
-main{max-width:1100px;margin:25px auto;padding:0 18px}
-.panel{background:white;border:1px solid #e4e9ef;padding:23px;border-radius:10px;margin-bottom:20px}
-h2{color:var(--navy)}
-input,select,textarea{width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccd4dd;border-radius:6px;font-size:15px}
-label{font-size:14px;font-weight:bold}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
-.small{font-size:13px;color:#667486;line-height:1.6}
-.hidden{display:none!important}
-.notice{padding:12px;background:#eef5fb;border-radius:6px;margin:12px 0;font-size:14px}
-.product{background:white;padding:17px;border-radius:9px;border:1px solid #e3e8ed}
-.product h3{margin:5px 0}
-.price{font-size:20px;font-weight:bold;color:var(--navy)}
-footer{background:var(--navy);color:white;padding:30px 6%;margin-top:40px}
-footer p{color:#d5dce4}
-.status{font-weight:bold;color:var(--green)}
-hr{border:0;border-top:1px solid #e5e9ee;margin:20px 0}
+.hero p{font-size:17px;line-height:1.6;color:#e8edf4;max-width:650px;margin:0 auto 25px}
+.search{display:flex;max-width:650px;margin:auto;background:white;padding:6px;border-radius:8px}
+.search input{flex:1;min-width:0;padding:13px;border:0;outline:0;font-size:15px}
+.search button{background:var(--orange);border:0;border-radius:6px;padding:0 22px;font-weight:bold;cursor:pointer}
+.hero-note{font-size:12px!important;margin-top:13px!important}
+.container{max-width:1200px;margin:auto;padding:35px 5%}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.section-title h2{margin:0;color:var(--navy);font-size:24px}
+.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px}
+.category{background:var(--light);border-radius:9px;padding:20px 10px;text-align:center;cursor:pointer;border:1px solid #edf0f4}
+.category:hover,.category.active{border-color:var(--orange);background:#fff7ed}
+.category .emoji{font-size:30px;display:block;margin-bottom:9px}
+.category strong{font-size:13px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+.product{border:1px solid #e6eaf0;border-radius:10px;overflow:hidden;background:white}
+.product-image{height:150px;background:#edf1f5;display:flex;align-items:center;justify-content:center;font-size:60px}
+.product-info{padding:15px}
+.product-info h3{font-size:16px;margin:0 0 8px;color:var(--navy)}
+.price{font-size:18px;font-weight:bold;color:var(--green)}
+.location{font-size:12px;color:#68768a;margin-top:8px}
+.demo-label{font-size:10px;color:#8a5a13;background:#fff1d9;padding:4px 7px;border-radius:4px;display:inline-block;margin-top:9px}
+.empty{display:none;text-align:center;padding:30px;color:#64748b}
+.banner{background:#fff5e9;border-radius:12px;padding:30px;text-align:center;margin-top:30px}
+.banner h2{color:var(--navy);margin-top:0}
+.banner p{line-height:1.6}
+footer{background:#102b4e;color:white;padding:35px 5%;margin-top:35px}
+.footer-inner{max-width:1200px;margin:auto;display:flex;justify-content:space-between;gap:25px;flex-wrap:wrap}
+footer p,footer a{color:#d7e0eb;font-size:13px;line-height:1.7}
+footer a{margin-right:14px;text-decoration:none}
+footer a:hover{color:#ffb45e}
+@media(max-width:600px){header{justify-content:center;text-align:center}nav{justify-content:center;gap:13px}.hero{padding:45px 5%}.search button{padding:0 13px}.container{padding:28px 5%}}
 </style>
 </head>
 <body>
-
 <header>
-<a href="#" class="logo">SOKO<span>KUU</span> 🇰🇪</a>
-<div>
-<button onclick="showSection('auth')">Sign in / Register</button>
-<button onclick="logout()" id="logoutBtn" class="hidden">Sign out</button>
-</div>
+  <div>
+    <div class="logo">SOKO<span>KUU</span></div>
+    <div class="tagline">BUY. SELL. GROW TOGETHER. ACROSS KENYA.</div>
+  </div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#categories">Categories</a>
+    <a href="#products">Products</a>
+    <a href="#sell">Become a Seller</a>
+  </nav>
+  <a class="sell-btn" href="#sell">Start Selling</a>
 </header>
 
-<nav>
-<a href="#" onclick="showSection('home')">Home</a>
-<a href="#products" onclick="showSection('home')">Products</a>
-<a href="#" onclick="showSection('auth')">Buyer Account</a>
-<a href="#" onclick="showSection('auth')">Become a Seller</a>
-<a href="#" onclick="showSection('dashboard')">My Dashboard</a>
-</nav>
-
-<section id="home">
-<div class="hero">
-<h1>Kenya's Nationwide Marketplace</h1>
-<p>Buy, sell and discover products across all 47 counties. Shop retail or wholesale, connect directly with businesses and arrange delivery on your terms.</p>
-<button onclick="showSection('auth')">Create an Account</button>
-</div>
-
-<main>
-<div class="panel">
-<h2>Welcome to SOKOKUU</h2>
-<p>Discover businesses and products from Nairobi, Mombasa, Machakos, Kisumu, Nakuru, Eldoret and across Kenya.</p>
-<div class="grid">
-<div>📱 Electronics</div>
-<div>👕 Fashion</div>
-<div>🛋️ Home & Furniture</div>
-<div>🔧 Hardware</div>
-<div>💄 Beauty</div>
-<div>🌾 Agriculture</div>
-<div>📦 Wholesale</div>
-</div>
-</div>
-<div class="panel" id="products">
-<h2>Available Products</h2>
-<div id="productList">Loading products...</div>
-</div>
-</main>
+<section class="hero" id="home">
+  <h1>Kenya's Nationwide Marketplace</h1>
+  <p>Discover products from sellers across all 47 counties. Shop locally, buy wholesale, compare offers and connect directly with sellers.</p>
+  <div class="search">
+    <input id="searchInput" type="search" placeholder="What are you looking for?">
+    <button onclick="searchProducts()">Search</button>
+  </div>
+  <p class="hero-note">From Nairobi to Mombasa, Kisumu to Eldoret — one marketplace for Kenya.</p>
 </section>
 
-<section id="auth" class="hidden">
 <main>
-<div class="panel">
-<h2>Welcome to SOKOKUU</h2>
-<p>Choose the account you want to create.</p>
-<div class="grid">
-<button onclick="setType('buyer')">Register as Buyer</button>
-<button onclick="setType('seller')">Register as Seller</button>
-</div>
-<hr>
-<h2 id="formTitle">Create your account</h2>
-<form id="registerForm">
-<label>Full name</label>
-<input id="fullName" required placeholder="Your full name">
-
-<div id="sellerFields" class="hidden">
-<label>Business name</label>
-<input id="businessName" placeholder="Registered or trading name">
-
-<label>County</label>
-<select id="county">
-<option value="">Select county</option>
-<option>Nairobi</option><option>Mombasa</option><option>Machakos</option>
-<option>Kajiado</option><option>Kiambu</option><option>Nakuru</option>
-<option>Kisumu</option><option>Uasin Gishu</option><option>Nyeri</option>
-<option>Meru</option><option>Murang'a</option><option>Other</option>
-</select>
-<label>Town</label>
-<input id="town" placeholder="Your business town">
-<label>Business category</label>
-<select id="category">
-<option value="">Select category</option>
-<option>Electronics</option><option>Fashion</option>
-<option>Home and Furniture</option><option>Hardware</option>
-<option>Beauty</option><option>Agriculture</option>
-<option>Wholesale and General Merchandise</option><option>Other</option>
-</select>
-</div>
-
-<label>Phone number</label>
-<input id="phone" type="tel" required placeholder="e.g. 07XXXXXXXX">
-
-<label>Email address</label>
-<input id="email" type="email" required placeholder="you@example.com">
-
-<label>Password</label>
-<input id="password" type="password" required minlength="8" placeholder="At least 8 characters">
-
-<button type="submit" id="registerBtn">Create Account</button>
-</form>
-<div class="notice" id="authMessage">By registering, you agree to provide accurate account information.</div>
-<hr>
-<h2>Already registered? Sign in</h2>
-<form id="loginForm">
-<label>Email</label>
-<input id="loginEmail" type="email" required>
-<label>Password</label>
-<input id="loginPassword" type="password" required>
-<button type="submit">Sign in</button>
-</form>
-</div>
-</main>
-</section>
-
-<section id="dashboard" class="hidden">
-<main>
-<div class="panel">
-<h2>My SOKOKUU Dashboard</h2>
-<p id="welcome">Loading your account...</p>
-<p id="accountStatus" class="status"></p>
-<button onclick="loadDashboard()">Refresh Dashboard</button>
-<button onclick="showSection('home')">Back to Marketplace</button>
-</div>
-
-<div id="sellerDashboard" class="hidden">
-<div class="panel">
-<h2>Seller Business Profile</h2>
-<div id="sellerStatus"></div>
-<p class="small">Seller accounts require approval before products can be published.</p>
-</div>
-
-<div class="panel">
-<h2>Add a Product</h2>
-<form id="productForm">
-<label>Product name</label>
-<input id="productTitle" required>
-<label>Description</label>
-<textarea id="productDescription"></textarea>
-<label>Category</label>
-<input id="productCategory">
-<label>Retail price (KES)</label>
-<input id="productPrice" type="number" min="0" step="0.01" required>
-<label>Wholesale price (KES, optional)</label>
-<input id="wholesalePrice" type="number" min="0" step="0.01">
-<label>Stock quantity</label>
-<input id="productStock" type="number" min="0" value="1">
-<label>Product town</label>
-<input id="productTown">
-<button type="submit">Submit Product</button>
-</form>
-<div id="productMessage" class="notice"></div>
-</div>
-
-<div class="panel">
-<h2>My Products</h2>
-<div id="myProducts">Loading...</div>
-</div>
-
-<div class="panel">
-<h2>Private SOKOKUU Seller Billing</h2>
-<p class="small">This section is available to approved sellers. SOKOKUU's platform payment instructions are separate from payments buyers make to you.</p>
-<div id="billingDetails">Checking seller access...</div>
-</div>
-</div>
-
-<div id="buyerDashboard" class="panel hidden">
-<h2>Buyer Account</h2>
-<p>Your buyer account is active. Buyer order history and saved products will be added to this dashboard.</p>
-</div>
-</main>
-</section>
-
-<section id="adminDashboard" class="hidden">
-  <div class="container">
-    <div class="panel">
-      <h2>SOKOKUU Admin Dashboard</h2>
-      <p>Manage sellers, products and marketplace activity.</p>
-
-      <div class="grid">
-        <div class="panel">
-          <h3>Seller Applications</h3>
-          <p id="adminSellerCount">Loading...</p>
-          <div id="adminSellers"></div>
-        </div>
-
-        <div class="panel">
-          <h3>Product Listings</h3>
-          <p id="adminProductCount">Loading...</p>
-          <div id="adminProducts"></div>
-        </div>
-      </div>
-    </div>
+<section class="container" id="categories">
+  <div class="section-title"><h2>Shop by Category</h2></div>
+  <div class="categories">
+    <div class="category active" onclick="filterCategory('all',this)"><span class="emoji">🛍️</span><strong>All Products</strong></div>
+    <div class="category" onclick="filterCategory('Electronics',this)"><span class="emoji">📱</span><strong>Electronics</strong></div>
+    <div class="category" onclick="filterCategory('Fashion',this)"><span class="emoji">👕</span><strong>Fashion</strong></div>
+    <div class="category" onclick="filterCategory('Furniture',this)"><span class="emoji">🛋️</span><strong>Furniture</strong></div>
+    <div class="category" onclick="filterCategory('Hardware',this)"><span class="emoji">🔨</span><strong>Hardware</strong></div>
+    <div class="category" onclick="filterCategory('Beauty',this)"><span class="emoji">💄</span><strong>Beauty</strong></div>
+    <div class="category" onclick="filterCategory('Agriculture',this)"><span class="emoji">🌽</span><strong>Agriculture</strong></div>
+    <div class="category" onclick="filterCategory('Wholesale',this)"><span class="emoji">📦</span><strong>Wholesale</strong></div>
   </div>
 </section>
- <footer>
-<div class="logo" style="color:white">SOKO<span>KUU</span> 🇰🇪</div>
-<p>Buy. Sell. Grow Together. Across Kenya.</p>
-<p>Free basic seller registration. Sellers choose their own customer payment methods and delivery terms.</p>
-<p>© 2026 SOKOKUU</p>
+
+<section class="container" id="products">
+  <div class="section-title">
+    <h2>Explore Products</h2>
+    <span style="font-size:12px;color:#778399">Illustrative preview listings</span>
+  </div>
+  <div class="products" id="productGrid">
+    <article class="product" data-category="Electronics" data-name="Smartphone">
+      <div class="product-image">📱</div>
+      <div class="product-info"><h3>Smartphone</h3><div class="price">KSh 15,000</div><div class="location">📍 Nairobi, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Fashion" data-name="Fashion clothing">
+      <div class="product-image">👟</div>
+      <div class="product-info"><h3>Fashion & Footwear</h3><div class="price">KSh 2,500</div><div class="location">📍 Mombasa, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Furniture" data-name="Home furniture">
+      <div class="product-image">🪑</div>
+      <div class="product-info"><h3>Home Furniture</h3><div class="price">KSh 8,500</div><div class="location">📍 Nakuru, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Hardware" data-name="Building hardware">
+      <div class="product-image">🧰</div>
+      <div class="product-info"><h3>Building Supplies</h3><div class="price">Request a quote</div><div class="location">📍 Kisumu, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Beauty" data-name="Beauty cosmetics">
+      <div class="product-image">💄</div>
+      <div class="product-info"><h3>Beauty Products</h3><div class="price">KSh 1,200</div><div class="location">📍 Machakos, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Agriculture" data-name="Agricultural produce">
+      <div class="product-image">🌽</div>
+      <div class="product-info"><h3>Agricultural Produce</h3><div class="price">Request a quote</div><div class="location">📍 Eldoret, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+    <article class="product" data-category="Wholesale" data-name="Wholesale merchandise">
+      <div class="product-image">📦</div>
+      <div class="product-info"><h3>Wholesale Merchandise</h3><div class="price">Bulk prices available</div><div class="location">📍 Thika, Kenya</div><span class="demo-label">Sample listing</span></div>
+    </article>
+  </div>
+  <div class="empty" id="emptyMessage">No matching sample products. Try another search.</div>
+</section>
+
+<section class="container" id="sell">
+  <div class="banner">
+    <h2>Are You a Seller?</h2>
+    <p>Bring your business to customers across Kenya. SOKOKUU is being built to help businesses of all sizes reach more buyers.</p>
+    <p><strong>Free basic seller listings are part of our planned marketplace model.</strong></p>
+    <a class="primary-btn" href="mailto:info@sokokuu.com?subject=SOKOKUU%20Seller%20Enquiry">Enquire About Selling</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div><div class="logo">SOKO<span>KUU</span></div><p>Kenya's Nationwide Marketplace</p><p>Buy. Sell. Grow Together. Across Kenya.</p></div>
+    <div><strong>Explore</strong><p><a href="#categories">Categories</a><a href="#products">Products</a><a href="#sell">Become a Seller</a></p></div>
+    <div><strong>Contact</strong><p>Seller enquiries: use the enquiry link above.</p><p>© <span id="year"></span> SOKOKUU. All rights reserved.</p></div>
+  </div>
 </footer>
 
 <script>
-const SUPABASE_URL = "https://glszdyzkrbrypxnpbwav.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Fz2SigSjE22xseSiRfbJNg_ovPeXBAS";
-
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let accountType = "buyer";
-let currentUser = null;
-
-function showSection(id){
- ["home","auth","dashboard"].forEach(s=>
-  document.getElementById(s).classList.add("hidden")
- );
- document.getElementById(id).classList.remove("hidden");
- if(id==="dashboard") loadDashboard();
- window.scrollTo(0,0);
-}
-
-function setType(type){
- accountType=type;
- document.getElementById("sellerFields").classList.toggle("hidden",type!=="seller");
- document.getElementById("formTitle").textContent=
-  type==="seller"?"Register as a Seller":"Register as a Buyer";
- document.getElementById("registerBtn").textContent=
-  type==="seller"?"Register Business":"Create Buyer Account";
-}
-
-function message(text){
- document.getElementById("authMessage").textContent=text;
-}
-
-document.getElementById("registerForm").addEventListener("submit",async e=>{
- e.preventDefault();
- const full_name=document.getElementById("fullName").value.trim();
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- const phone=document.getElementById("phone").value.trim();
-
- const metadata={
-  full_name,phone,account_type:accountType
- };
-
- if(accountType==="seller"){
-  metadata.business_name=document.getElementById("businessName").value.trim();
-  metadata.county=document.getElementById("county").value;
-  metadata.town=document.getElementById("town").value.trim();
-  metadata.category=document.getElementById("category").value;
-  if(!metadata.business_name||!metadata.county||!metadata.town||!metadata.category){
-   message("Please complete all business details.");return;
-  }
- }
-
- document.getElementById("registerBtn").disabled=true;
- message("Creating your account...");
-
- const {data,error}=await db.auth.signUp({
-  email,password,options:{data:metadata}
+document.getElementById("year").textContent=new Date().getFullYear();
+let activeCategory="all";
+function updateProducts(){
+ const term=document.getElementById("searchInput").value.toLowerCase().trim();
+ let shown=0;
+ document.querySelectorAll(".product").forEach(card=>{
+  const matchesCategory=activeCategory==="all"||card.dataset.category===activeCategory;
+  const matchesSearch=(card.dataset.name+" "+card.innerText).toLowerCase().includes(term);
+  card.style.display=matchesCategory&&matchesSearch?"":"none";
+  if(matchesCategory&&matchesSearch)shown++;
  });
-
- document.getElementById("registerBtn").disabled=false;
-
- if(error){message(error.message);return;}
-
- if(data.session){
-  currentUser=data.user;
-  message("Registration successful. Your account is ready.");
-  showSection("dashboard");
-  await loadDashboard();
- }else{
-  message("Registration received! Please check your email and confirm your address before signing in. Your seller application will remain pending approval.");
- }
-});
-
-document.getElementById("loginForm").addEventListener("submit",async e=>{
- e.preventDefault();
- message("Signing in...");
- const {data,error}=await db.auth.signInWithPassword({
-  email:document.getElementById("loginEmail").value.trim(),
-  password:document.getElementById("loginPassword").value
- });
- if(error){message(error.message);return;}
- currentUser=data.user;
- message("Signed in successfully.");
- showSection("dashboard");
- await loadDashboard();
-});
-
-async function logout(){
- await db.auth.signOut();
- currentUser=null;
- document.getElementById("logoutBtn").classList.add("hidden");
- showSection("home");
+ document.getElementById("emptyMessage").style.display=shown?"none":"block";
 }
-
-async function loadDashboard(){
- const {data:{user}}=await db.auth.getUser();
- if(!user){
-  document.getElementById("welcome").textContent="Please sign in first.";
-  document.getElementById("sellerDashboard").classList.add("hidden");
-  document.getElementById("buyerDashboard").classList.add("hidden");
-  document.getElementById("logoutBtn").classList.add("hidden");
-  return;
- }
- currentUser=user;
- document.getElementById("logoutBtn").classList.remove("hidden");
- const {data:profile,error}=await db.from("profiles").select("*").eq("id",user.id).single();
- if(error){
-  document.getElementById("welcome").textContent="Profile is being prepared. Please refresh shortly.";
-  return;
- }
- document.getElementById("welcome").textContent="Welcome, "+profile.full_name;
- document.getElementById("accountStatus").textContent=
-  profile.account_type==="seller"?"Seller account":"Buyer account";
-
- if(profile.account_type==="seller"){
-  document.getElementById("sellerDashboard").classList.remove("hidden");
-  document.getElementById("buyerDashboard").classList.add("hidden");
-  await loadSellerDashboard(user.id);
- }else{
-  document.getElementById("buyerDashboard").classList.remove("hidden");
-  document.getElementById("sellerDashboard").classList.add("hidden");
- }
+function filterCategory(category,element){
+ activeCategory=category;
+ document.querySelectorAll(".category").forEach(item=>item.classList.remove("active"));
+ element.classList.add("active");
+ updateProducts();
 }
-
-async function loadSellerDashboard(id){
- const {data:seller,error}=await db.from("seller_profiles").select("*").eq("user_id",id).single();
- if(error){
-  document.getElementById("sellerStatus").textContent="Business profile is being prepared.";
-  return;
- }
- document.getElementById("sellerStatus").textContent=
-  "Business: "+seller.business_name+" | "+seller.town+", "+seller.county+" | Approval: "+seller.status;
-
- const {data:products}=await db.from("products").select("*").eq("seller_id",id).order("created_at",{ascending:false});
- document.getElementById("myProducts").innerHTML="";
- (products||[]).forEach(p=>{
-  const item=document.createElement("div");
-  item.className="product";
-  const name=document.createElement("h3");
-  name.textContent=p.title;
-  const detail=document.createElement("p");
-  detail.textContent="KES "+p.price+" | Stock: "+p.stock+" | "+p.status;
-  item.append(name,detail);
-  document.getElementById("myProducts").append(item);
- });
- if(!products||products.length===0) document.getElementById("myProducts").textContent="You have not added products yet.";
-
- await loadBilling();
+function searchProducts(){
+ updateProducts();
+ document.getElementById("products").scrollIntoView({behavior:"smooth"});
 }
-
-document.getElementById("productForm").addEventListener("submit",async e=>{
- e.preventDefault();
- if(!currentUser)return;
- const price=Number(document.getElementById("productPrice").value);
- const wholesale=document.getElementById("wholesalePrice").value;
- const {error}=await db.from("products").insert({
-  seller_id:currentUser.id,
-  title:document.getElementById("productTitle").value.trim(),
-  description:document.getElementById("productDescription").value.trim(),
-  category:document.getElementById("productCategory").value.trim(),
-  price,
-  wholesale_price:wholesale?Number(wholesale):null,
-  stock:Number(document.getElementById("productStock").value),
-  town:document.getElementById("productTown").value.trim(),
-  status:"draft"
- });
- document.getElementById("productMessage").textContent=
-  error?error.message:"Product saved as a draft. It can be published after seller approval.";
- if(!error){
-  e.target.reset();
-  await loadSellerDashboard(currentUser.id);
- }
-});
-
-async function loadBilling(){
- const target=document.getElementById("billingDetails");
- target.textContent="Checking seller approval...";
- const {data:seller}=await db.from("seller_profiles").select("status").eq("user_id",currentUser.id).single();
- if(!seller||seller.status!=="approved"){
-  target.textContent="Your business is awaiting approval. SOKOKUU payment instructions will appear here after approval.";
-  return;
- }
- const {data:settings,error}=await db.from("platform_payment_settings").select("*").eq("active",true);
- if(error){
-  target.textContent="Unable to load billing details. Please contact SOKOKUU support.";
-  return;
- }
- const {data:charges}=await db.from("platform_charges").select("*").eq("seller_id",currentUser.id);
- target.innerHTML="";
- if(!settings||settings.length===0){
-  target.textContent="No platform payment instructions have been added yet.";
- }else{
-  settings.forEach(s=>{
-   const p=document.createElement("p");
-   p.textContent=s.method+" | "+(s.account_name||"")+" | "+(s.account_number||"")+" | "+(s.instructions||"");
-   target.append(p);
-  });
- }
- const heading=document.createElement("h3");
- heading.textContent="Your platform charges";
- target.append(heading);
- (charges||[]).forEach(c=>{
-  const p=document.createElement("p");
-  p.textContent=c.charge_type+" — KES "+c.amount+" — "+c.status;
-  target.append(p);
- });
- if(!charges||charges.length===0){
-  const p=document.createElement("p");
-  p.textContent="You have no platform charges yet.";
-  target.append(p);
- }
-}
-
-async function loadProducts(){
- const target=document.getElementById("productList");
- const {data,error}=await db.from("products").select("id,title,description,price,town,category").eq("status","active").limit(30);
- target.innerHTML="";
- if(error){target.textContent="Products will appear here when listings are available.";return;}
- if(!data||data.length===0){target.textContent="New product listings are coming soon.";return;}
- data.forEach(p=>{
-  const card=document.createElement("div");
-  card.className="product";
-  const title=document.createElement("h3");
-  title.textContent=p.title;
-  const price=document.createElement("p");
-  price.className="price";
-  price.textContent="KES "+p.price;
-  const info=document.createElement("p");
-  info.textContent=(p.category||"Product")+" | "+(p.town||"Kenya");
-  card.append(title,price,info);
-  target.append(card);
- });
-}
-
-db.auth.onAuthStateChange((_event,session)=>{
- currentUser=session?.user||null;
- if(currentUser) document.getElementById("logoutBtn").classList.remove("hidden");
- else document.getElementById("logoutBtn").classList.add("hidden");
-});
-
-(async()=>{
- const {data:{session}}=await db.auth.getSession();
- if(session){
-  currentUser=session.user;
-  showSection("dashboard");
-  await loadDashboard();
- }else{
-  loadProducts();
- }
-})();
+document.getElementById("searchInput").addEventListener("input",updateProducts);
 </script>
 </body>
 </html>
