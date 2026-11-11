@@ -207,7 +207,27 @@ footer a:hover{color:#ffb45e}
       <div id="adminStats"></div>
 
       <h3>Seller Management</h3>
-      <div id="sellerManagement"></div>
+      <div id="sellerManagement">
+  <p>Loading seller applications...</p>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:650px;">
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Location</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="sellerManagementRows">
+        <tr>
+          <td colspan="5">Loading sellers...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
       <h3>Product Management</h3>
       <div id="productManagement"></div>
@@ -392,7 +412,83 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 }
 
 checkUserSession();
-window.checkAdminAccess = async function() {
+ async function loadSellerManagement() {
+  const container = document.getElementById('sellerManagementRows');
+  container.innerHTML = '<tr><td colspan="5">Loading sellers...</td></tr>';
+
+  const { data: sellers, error } = await supabaseClient
+    .from('seller_profiles')
+    .select('user_id, business_name, county, town, description, status')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.innerHTML =
+      '<tr><td colspan="5">Could not load sellers: ' + error.message + '</td></tr>';
+    return;
+  }
+
+  if (!sellers || sellers.length === 0) {
+    container.innerHTML =
+      '<tr><td colspan="5">No seller applications found.</td></tr>';
+    return;
+  }
+
+  container.innerHTML = '';
+
+  sellers.forEach(seller => {
+    const row = document.createElement('tr');
+
+    const business = document.createElement('td');
+    business.textContent = seller.business_name || 'Unnamed';
+
+    const location = document.createElement('td');
+    location.textContent =
+      (seller.town || '') + ', ' + (seller.county || '');
+
+    const description = document.createElement('td');
+    description.textContent = seller.description || 'No description';
+
+    const status = document.createElement('td');
+    status.textContent = seller.status || 'pending';
+
+    const actions = document.createElement('td');
+
+    ['approved', 'rejected', 'pending'].forEach(newStatus => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent =
+        newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+      button.style.margin = '3px';
+
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+
+        const { error } = await supabaseClient.rpc(
+          'admin_update_seller_status',
+          {
+            p_user_id: seller.user_id,
+            p_status: newStatus
+          }
+        );
+
+        if (error) {
+          alert('Could not update seller: ' + error.message);
+          button.disabled = false;
+          return;
+        }
+
+        alert('Seller status updated to ' + newStatus + '.');
+        loadSellerManagement();
+      });
+
+      actions.appendChild(button);
+    });
+
+    row.append(business, location, description, status, actions);
+    container.appendChild(row);
+  });
+}
+  window.checkAdminAccess = async function() {
   const dashboard = document.getElementById('adminDashboard');
   const message = document.getElementById('adminMessage');
   const content = document.getElementById('adminContent');
@@ -417,6 +513,7 @@ window.checkAdminAccess = async function() {
   if (data === true) {
     dashboard.style.display = 'block';
     content.style.display = 'block';
+    loadSellerManagement();
     message.textContent = 'Administrator access verified.';
   } else {
     dashboard.style.display = 'none';
