@@ -319,7 +319,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   document.getElementById('userSession').style.display = 'block';
   document.getElementById('signedInUser').textContent =
     'Signed in as: ' + data.user.email;
-}
+checkAdminAccess();
+  }
 });
 async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
