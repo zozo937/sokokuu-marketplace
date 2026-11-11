@@ -175,6 +175,10 @@ footer a:hover{color:#ffb45e}
     </form>
 
     <p id="accountMessage" role="status"></p>
+  <div id="userSession" style="display:none; margin-top:15px;">
+  <p id="signedInUser"></p>
+  <button type="button" onclick="logoutUser()">Logout</button>
+</div>
   </div>
 </section>
   <footer>
@@ -222,6 +226,22 @@ document.getElementById("searchInput").addEventListener("input",updateProducts);
 
   console.log('SOKOKUU database connection initialized');
 function showAccountForm(type) {
+ async function logoutUser() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  const message = document.getElementById('accountMessage');
+
+  if (error) {
+    message.textContent = error.message;
+    return;
+  }
+
+  document.getElementById('userSession').style.display = 'none';
+  document.getElementById('signedInUser').textContent = '';
+  message.textContent = 'You have logged out successfully.';
+
+  showAccountForm('login');
+}
   document.getElementById('loginForm').style.display =
     type === 'login' ? 'block' : 'none';
 
@@ -265,10 +285,32 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     password: document.getElementById('loginPassword').value
   });
 
-  message.textContent = error
-    ? error.message
-    : 'Login successful. Welcome to SOKOKUU!';
+  if (error) {
+  message.textContent = error.message;
+} else {
+  message.textContent = 'Login successful. Welcome to SOKOKUU!';
+
+  document.getElementById('userSession').style.display = 'block';
+  document.getElementById('signedInUser').textContent =
+    'Signed in as: ' + data.user.email;
+}
 });
+async function checkUserSession() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    console.error('Session check failed:', error.message);
+    return;
+  }
+
+  if (data.session) {
+    document.getElementById('userSession').style.display = 'block';
+    document.getElementById('signedInUser').textContent =
+      'Signed in as: ' + data.session.user.email;
+  }
+}
+
+checkUserSession();
 </script>
 </body>
 </html>
