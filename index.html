@@ -256,7 +256,32 @@ footer a:hover{color:#ffb45e}
 </div>
 
       <h3>Order Management</h3>
-      <div id="orderManagement"></div>
+      <div id="orderManagement">
+  <p>Marketplace orders</p>
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:850px;">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Buyer ID</th>
+          <th>Seller ID</th>
+          <th>Product ID</th>
+          <th>Quantity</th>
+          <th>Unit Price (KES)</th>
+          <th>Delivery Fee</th>
+          <th>Payment Method</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="orderManagementRows">
+        <tr>
+          <td colspan="10">Loading orders...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
     </div>
   </div>
 </section>
@@ -563,6 +588,106 @@ checkUserSession();
     container.appendChild(row);
   });
 }
+ async function loadOrderManagement() {
+  const container = document.getElementById('orderManagementRows');
+
+  container.innerHTML =
+    '<tr><td colspan="10">Loading orders...</td></tr>';
+
+  const { data: orders, error } = await supabaseClient
+    .from('orders')
+    .select('id, buyer_id, seller_id, product_id, quantity, agreed_unit_price, delivery_fee, payment_method, status')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.innerHTML =
+      '<tr><td colspan="10">Could not load orders: ' +
+      error.message + '</td></tr>';
+    return;
+  }
+
+  if (!orders || orders.length === 0) {
+    container.innerHTML =
+      '<tr><td colspan="10">No orders have been placed yet.</td></tr>';
+    return;
+  }
+
+  container.innerHTML = '';
+
+  const statuses = [
+    'pending',
+    'confirmed',
+    'processing',
+    'shipped',
+    'completed',
+    'cancelled'
+  ];
+
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+
+    const values = [
+      order.id,
+      order.buyer_id,
+      order.seller_id,
+      order.product_id || 'Not specified',
+      order.quantity,
+      'KES ' + Number(order.agreed_unit_price).toLocaleString(),
+      'KES ' + Number(order.delivery_fee || 0).toLocaleString(),
+      order.payment_method || 'Not specified',
+      order.status
+    ];
+
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    const actions = document.createElement('td');
+    const select = document.createElement('select');
+
+    statuses.forEach(status => {
+      const option = document.createElement('option');
+      option.value = status;
+      option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+      select.appendChild(option);
+    });
+
+    select.value = order.status;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Update';
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      button.textContent = 'Updating...';
+
+      const { error } = await supabaseClient.rpc(
+        'admin_update_order_status',
+        {
+          p_order_id: order.id,
+          p_status: select.value
+        }
+      );
+
+      if (error) {
+        alert('Order update failed: ' + error.message);
+        button.disabled = false;
+        button.textContent = 'Update';
+        return;
+      }
+
+      alert('Order status updated successfully.');
+      loadOrderManagement();
+    });
+
+    actions.append(select, button);
+    row.appendChild(actions);
+    container.appendChild(row);
+  });
+}
   window.checkAdminAccess = async function() {
   const dashboard = document.getElementById('adminDashboard');
   const message = document.getElementById('adminMessage');
@@ -590,6 +715,7 @@ checkUserSession();
     content.style.display = 'block';
     loadSellerManagement();
     loadProductManagement();
+   loadOrderManagement();
     message.textContent = 'Administrator access verified.';
   } else {
     dashboard.style.display = 'none';
