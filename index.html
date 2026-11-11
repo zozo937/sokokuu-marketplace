@@ -236,7 +236,7 @@ function showAccountForm(type) {
   document.getElementById('accountMessage').textContent = '';
 }
 
-async function logoutUser() {
+window.logoutUser = async function() {
   const { error } = await supabaseClient.auth.signOut();
 
   const message = document.getElementById('accountMessage');
@@ -251,7 +251,7 @@ async function logoutUser() {
   message.textContent = 'You have logged out successfully.';
 
   showAccountForm('login');
-}
+};
 
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
   e.preventDefault();
