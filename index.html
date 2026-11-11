@@ -174,6 +174,18 @@ footer a:hover{color:#ffb45e}
       <button type="submit">Create Account</button>
     </form>
 
+    <form id="resetPasswordForm" style="display:none">
+  <h3>Set a New Password</h3>
+  <input id="newPassword" type="password" placeholder="New password (minimum 8 characters)" minlength="8" required>
+  <input id="confirmNewPassword" type="password" placeholder="Confirm new password" minlength="8" required>
+  <button type="submit">Save New Password</button>
+</form>
+   <form id="resetPasswordForm" style="display:none">
+  <h3>Set a New Password</h3>
+  <input id="newPassword" type="password" placeholder="New password (minimum 8 characters)" minlength="8" required>
+  <input id="confirmNewPassword" type="password" placeholder="Confirm new password" minlength="8" required>
+  <button type="submit">Save New Password</button>
+</form>
     <p id="accountMessage" role="status"></p>
   <div id="userSession" style="display:none; margin-top:15px;">
   <p id="signedInUser"></p>
@@ -322,7 +334,49 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 checkAdminAccess();
   }
 });
-async function checkUserSession() {
+document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const message = document.getElementById('accountMessage');
+  const password = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+  if (password !== confirmPassword) {
+    message.textContent = 'Passwords do not match.';
+    return;
+  }
+
+  message.textContent = 'Updating your password...';
+
+  const { data, error } = await supabaseClient.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    message.textContent = error.message;
+    return;
+  }
+
+  message.textContent = 'Password updated successfully.';
+  document.getElementById('resetPasswordForm').style.display = 'none';
+  document.getElementById('userSession').style.display = 'block';
+  document.getElementById('signedInUser').textContent =
+    'Signed in as: ' + data.user.email;
+
+  checkAdminAccess();
+});
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    document.getElementById('account').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('resetPasswordForm').style.display = 'block';
+    document.getElementById('accountMessage').textContent =
+      'Set a new password for your SOKOKUU account.';
+  }
+});
+  async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
   if (error) {
