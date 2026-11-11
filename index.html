@@ -181,6 +181,30 @@ footer a:hover{color:#ffb45e}
 </div>
   </div>
 </section>
+ <section id="adminDashboard" style="display:none; padding:40px 20px;">
+  <div class="container">
+    <h2>SOKOKUU Administration</h2>
+    <p>Manage the SOKOKUU marketplace.</p>
+
+    <div id="adminMessage" role="status">
+      Checking administrator access...
+    </div>
+
+    <div id="adminContent" style="display:none;">
+      <h3>Marketplace Overview</h3>
+      <div id="adminStats"></div>
+
+      <h3>Seller Management</h3>
+      <div id="sellerManagement"></div>
+
+      <h3>Product Management</h3>
+      <div id="productManagement"></div>
+
+      <h3>Order Management</h3>
+      <div id="orderManagement"></div>
+    </div>
+  </div>
+</section>
   <footer>
   <div class="footer-inner">
     <div><div class="logo">SOKO<span>KUU</span></div><p>Kenya's Nationwide Marketplace</p><p>Buy. Sell. Grow Together. Across Kenya.</p></div>
@@ -313,6 +337,38 @@ async function checkUserSession() {
 }
 
 checkUserSession();
+window.checkAdminAccess = async function() {
+  const dashboard = document.getElementById('adminDashboard');
+  const message = document.getElementById('adminMessage');
+  const content = document.getElementById('adminContent');
+
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
+
+  if (sessionError || !sessionData.session) {
+    dashboard.style.display = 'none';
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc('is_sokokuu_admin');
+
+  if (error) {
+    dashboard.style.display = 'none';
+    message.textContent = 'Administrator access could not be verified.';
+    return;
+  }
+
+  if (data === true) {
+    dashboard.style.display = 'block';
+    content.style.display = 'block';
+    message.textContent = 'Administrator access verified.';
+  } else {
+    dashboard.style.display = 'none';
+  }
+};
+
+checkAdminAccess();
 </script>
 </body>
 </html>
