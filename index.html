@@ -209,6 +209,30 @@ footer a:hover{color:#ffb45e}
     <div id="sellerStatusMessage" role="status"></div>
 
     <div id="sellerProductArea" style="display:none;">
+     <h3>Payment Settings</h3>
+<form id="sellerPaymentForm">
+  <label for="sellerPaymentMethod">Preferred Payment Method</label>
+  <select id="sellerPaymentMethod" required>
+    <option value="">Choose payment method</option>
+    <option value="M-Pesa Till">M-Pesa Till</option>
+    <option value="M-Pesa Paybill">M-Pesa Paybill</option>
+    <option value="M-Pesa Phone Number">M-Pesa Phone Number</option>
+    <option value="Bank Transfer">Bank Transfer</option>
+    <option value="Cash on Delivery">Cash on Delivery</option>
+    <option value="Cash on Collection">Cash on Collection</option>
+    <option value="Other">Other</option>
+  </select>
+
+  <label for="sellerPaymentInstructions">Payment Instructions</label>
+  <textarea
+    id="sellerPaymentInstructions"
+    placeholder="Enter your Till number, Paybill details or other payment instructions"
+    required
+  ></textarea>
+
+  <button type="submit">Save Payment Details</button>
+</form>
+<p id="sellerPaymentMessage" role="status"></p> 
       <h3>Add a New Product</h3>
 
       <form id="sellerProductForm">
@@ -1000,6 +1024,35 @@ item.append(title, details, publishButton, soldOutButton);
 loadSellerOrders(user.id);
     loadSellerOrders(user.id);
   });
+  document.getElementById('sellerPaymentForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const message = document.getElementById('sellerPaymentMessage');
+  message.textContent = 'Saving payment details...';
+
+  const paymentMethod = document.getElementById('sellerPaymentMethod').value;
+  const paymentInstructions = document.getElementById('sellerPaymentInstructions').value.trim();
+
+  if (!paymentMethod || !paymentInstructions) {
+    message.textContent = 'Please complete all payment fields.';
+    return;
+  }
+
+  const { error } = await supabaseClient.rpc(
+    'seller_update_payment_details',
+    {
+      p_payment_method: paymentMethod,
+      p_payment_instructions: paymentInstructions
+    }
+  );
+
+  if (error) {
+    message.textContent = 'Could not save: ' + error.message;
+    return;
+  }
+
+  message.textContent = 'Payment details saved successfully!';
+});
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
