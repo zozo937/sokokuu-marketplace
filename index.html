@@ -194,7 +194,14 @@ footer a:hover{color:#ffb45e}
   </div>
 </section>
  
-<section id="sellerDashboard" style="display:none; padding:40px 20px;">
+<section id="buyerOrders" style="display:none; padding:40px 20px;">
+  <div class="container">
+    <h2>My Orders</h2>
+    <p>Track your purchases on SOKOKUU.</p>
+    <div id="buyerOrderList">Your orders will appear here.</div>
+  </div>
+</section>
+  <section id="sellerDashboard" style="display:none; padding:40px 20px;">
   <div class="container">
     <h2>My Seller Dashboard</h2>
     <p>Manage your SOKOKUU products.</p>
@@ -553,6 +560,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   document.getElementById('signedInUser').textContent =
     'Signed in as: ' + data.user.email;
 loadSellerDashboard(data.user);
+loadBuyerOrders(data.user.id);
     checkAdminAccess();
   }
 });
@@ -633,7 +641,84 @@ loadSellerOrders(user.id);
   }
 }
  
-async function loadSellerOrders(userId) {
+async function loadBuyerOrders(userId) {
+  const section = document.getElementById('buyerOrders');
+  const container = document.getElementById('buyerOrderList');
+
+  section.style.display = 'block';
+  container.textContent = 'Loading your orders...';
+
+  const { data: orders, error } = await supabaseClient
+    .from('orders')
+    .select(`
+      id,
+      product_id,
+      quantity,
+      agreed_unit_price,
+      delivery_fee,
+      status,
+      created_at
+    `)
+    .eq('buyer_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Buyer orders loading failed:', error.message);
+    container.textContent = 'Could not load your orders.';
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!orders || orders.length === 0) {
+    container.textContent = 'You have no orders yet.';
+    return;
+  }
+
+  orders.forEach(order => {
+    const item = document.createElement('div');
+    item.style.padding = '12px';
+    item.style.marginBottom = '10px';
+    item.style.border = '1px solid #ddd';
+
+    const details = document.createElement('p');
+    details.textContent =
+      'Order ID: ' + order.id +
+      ' | Product ID: ' + order.product_id +
+      ' | Quantity: ' + order.quantity +
+      ' | Unit price: KES ' + order.agreed_unit_price +
+      ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+      ' | Status: ' + order.status;
+
+    item.appendChild(details);
+
+    if (order.status === 'shipped') {
+      const receivedButton = document.createElement('button');
+      receivedButton.textContent = 'Confirm Receipt';
+      receivedButton.type = 'button';
+
+      receivedButton.onclick = async function() {
+        const { error } = await supabaseClient.rpc(
+          'buyer_confirm_order_receipt',
+          { p_order_id: order.id }
+        );
+
+        if (error) {
+          alert('Could not confirm receipt: ' + error.message);
+          return;
+        }
+
+        alert('Receipt confirmed successfully.');
+        loadBuyerOrders(userId);
+      };
+
+      item.appendChild(receivedButton);
+    }
+
+    container.appendChild(item);
+  });
+}
+  async function loadSellerOrders(userId) {
   const container = document.getElementById('sellerOrders');
 
   container.textContent = 'Loading customer orders...';
@@ -891,6 +976,7 @@ loadSellerOrders(user.id);
     document.getElementById('signedInUser').textContent =
       'Signed in as: ' + data.session.user.email;
   loadSellerDashboard(data.session.user);
+  loadBuyerOrders(data.session.user.id);
   }
 }
 
