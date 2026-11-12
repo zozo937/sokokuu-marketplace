@@ -484,7 +484,7 @@ orderButton.onclick = async function() {
   const buyerId = sessionData.session.user.id;
 
   const { data: checkoutDetails, error: checkoutError } =
-  await supabaseClient.rpc('get_seller_checkout_details', {
+  await supabaseClient.rpc('get_seller_checkout_details_v2', {
     p_seller_id: product.seller_id
   });
 
@@ -522,6 +522,12 @@ if (deliveryMethod === null || !deliveryMethod.trim()) {
   alert('Please enter a delivery method to continue.');
   return;
 }
+const selectedDeliveryMethod = deliveryMethod.trim();
+
+const orderDeliveryFee =
+  /collection/i.test(selectedDeliveryMethod)
+    ? 0
+    : Number(sellerDetails.delivery_fee || 0); 
   const { error } = await supabaseClient
     .from('orders')
     .insert({
@@ -530,7 +536,7 @@ if (deliveryMethod === null || !deliveryMethod.trim()) {
       product_id: product.id,
       quantity: quantity,
       agreed_unit_price: product.price,
-      delivery_fee: 0,
+      delivery_fee: orderDeliveryFee,
 delivery_method: deliveryMethod.trim(),
 payment_method: sellerDetails.payment_method || null,
 payment_instructions_snapshot: sellerDetails.payment_instructions || null,
