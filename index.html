@@ -237,6 +237,8 @@ footer a:hover{color:#ffb45e}
 
       <h3>My Products</h3>
       <div id="mySellerProducts">Your products will appear here.</div>
+    <h3>My Customer Orders</h3>
+<div id="sellerOrders">Your customer orders will appear here.</div>
     </div>
   </div>
 </section>
@@ -630,7 +632,58 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   }
 }
  
-async function loadMySellerProducts(userId) {
+async function loadSellerOrders(userId) {
+  const container = document.getElementById('sellerOrders');
+
+  container.textContent = 'Loading customer orders...';
+
+  const { data: orders, error } = await supabaseClient
+    .from('orders')
+    .select(`
+      id,
+      buyer_id,
+      product_id,
+      quantity,
+      agreed_unit_price,
+      delivery_fee,
+      status,
+      created_at
+    `)
+    .eq('seller_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Seller orders loading failed:', error.message);
+    container.textContent = 'Could not load customer orders.';
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!orders || orders.length === 0) {
+    container.textContent = 'You have no customer orders yet.';
+    return;
+  }
+
+  orders.forEach(order => {
+    const item = document.createElement('div');
+    item.style.padding = '12px';
+    item.style.marginBottom = '10px';
+    item.style.border = '1px solid #ddd';
+
+    const details = document.createElement('p');
+    details.textContent =
+      'Order ID: ' + order.id +
+      ' | Product ID: ' + order.product_id +
+      ' | Quantity: ' + order.quantity +
+      ' | Unit price: KES ' + order.agreed_unit_price +
+      ' | Status: ' + order.status;
+
+    item.appendChild(details);
+    container.appendChild(item);
+  });
+}
+  async function loadMySellerProducts(userId) {
   const container = document.getElementById('mySellerProducts');
 
   container.textContent = 'Loading your products...';
@@ -771,7 +824,8 @@ item.append(title, details, publishButton, soldOutButton);
   alert('Product added successfully!');
   document.getElementById('sellerProductForm').reset();
   loadMySellerProducts(user.id);
-});
+loadSellerOrders(user.id);
+  });
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
