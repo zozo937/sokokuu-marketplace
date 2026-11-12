@@ -624,7 +624,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   if (seller.status === 'approved') {
     message.textContent = 'Your seller account is approved.';
     productArea.style.display = 'block';
- loadMySellerProducts(user.id);
+loadMySellerProducts(user.id);
+loadSellerOrders(user.id);
   } else if (seller.status === 'pending') {
     message.textContent = 'Your seller application is pending approval. You can add products once approved.';
   } else {
