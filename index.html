@@ -825,6 +825,7 @@ item.append(title, details, publishButton, soldOutButton);
   document.getElementById('sellerProductForm').reset();
   loadMySellerProducts(user.id);
 loadSellerOrders(user.id);
+    loadSellerOrders(user.id);
   });
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
