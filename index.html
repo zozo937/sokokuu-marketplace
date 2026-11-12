@@ -384,7 +384,7 @@ async function loadPublicProducts() {
 
   const { data: products, error } = await supabaseClient
     .from('products')
-    .select('id, title, description, category, price, county, town, stock')
+    .select('id, seller_id, title, description, category, price, county, town, stock')
     .eq('status', 'active')
     .gt('stock', 0)
     .order('created_at', { ascending: false });
@@ -427,7 +427,54 @@ async function loadPublicProducts() {
     location.className = 'location';
     location.textContent = '📍 ' + [product.town, product.county, 'Kenya'].filter(Boolean).join(', ');
 
-    info.append(title, price, location);
+    const orderButton = document.createElement('button');
+orderButton.textContent = 'Order Product';
+orderButton.type = 'button';
+
+orderButton.onclick = async function() {
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+
+  if (!sessionData.session) {
+    alert('Please log in as a buyer to place an order.');
+    return;
+  }
+
+  const buyerId = sessionData.session.user.id;
+
+  const quantityInput = prompt(
+    'Enter the quantity you want to order:'
+  );
+
+  if (quantityInput === null) return;
+
+  const quantity = Number(quantityInput);
+
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > product.stock) {
+    alert('Enter a valid quantity between 1 and ' + product.stock);
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('orders')
+    .insert({
+      buyer_id: buyerId,
+      seller_id: product.seller_id,
+      product_id: product.id,
+      quantity: quantity,
+      agreed_unit_price: product.price,
+      delivery_fee: 0,
+      status: 'pending'
+    });
+
+  if (error) {
+    alert('Order could not be placed: ' + error.message);
+    return;
+  }
+
+  alert('Your order has been placed successfully!');
+};
+
+info.append(title, price, location, orderButton);
     article.append(image, info);
     grid.appendChild(article);
   });
