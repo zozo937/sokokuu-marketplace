@@ -651,14 +651,19 @@ async function loadBuyerOrders(userId) {
   const { data: orders, error } = await supabaseClient
     .from('orders')
     .select(`
-      id,
-      product_id,
-      quantity,
-      agreed_unit_price,
-      delivery_fee,
-      status,
-      created_at
-    `)
+  id,
+  product_id,
+  seller_id,
+  quantity,
+  agreed_unit_price,
+  delivery_fee,
+  delivery_method,
+  payment_method,
+  status,
+  created_at,
+  products ( title, county, town ),
+  seller_profiles ( business_name, county, town )
+`)
     .eq('buyer_id', userId)
     .order('created_at', { ascending: false });
 
@@ -681,14 +686,25 @@ async function loadBuyerOrders(userId) {
     item.style.marginBottom = '10px';
     item.style.border = '1px solid #ddd';
 
-    const details = document.createElement('p');
-    details.textContent =
-      'Order ID: ' + order.id +
-      ' | Product ID: ' + order.product_id +
-      ' | Quantity: ' + order.quantity +
-      ' | Unit price: KES ' + order.agreed_unit_price +
-      ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
-      ' | Status: ' + order.status;
+   const product = Array.isArray(order.products)
+  ? order.products[0]
+  : order.products;
+
+const seller = Array.isArray(order.seller_profiles)
+  ? order.seller_profiles[0]
+  : order.seller_profiles;
+
+const details = document.createElement('p');
+details.textContent =
+  'Product: ' + (product?.title || 'Details unavailable') +
+  ' | Seller: ' + (seller?.business_name || 'Details unavailable') +
+  ' | Quantity: ' + order.quantity +
+  ' | Unit price: KES ' + order.agreed_unit_price +
+  ' | Total: KES ' + (order.quantity * order.agreed_unit_price) +
+  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+  ' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
+  ' | Payment method: ' + (order.payment_method || 'To be agreed') +
+  ' | Status: ' + order.status;
 
     item.appendChild(details);
 
