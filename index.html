@@ -680,7 +680,57 @@ async function loadSellerOrders(userId) {
       ' | Unit price: KES ' + order.agreed_unit_price +
       ' | Status: ' + order.status;
 
-    item.appendChild(details);
+    const statusSelect = document.createElement('select');
+
+const allowedStatuses = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['processing', 'cancelled'],
+  processing: ['shipped', 'cancelled']
+};
+
+const placeholder = document.createElement('option');
+placeholder.value = '';
+placeholder.textContent = 'Choose new status';
+placeholder.selected = true;
+statusSelect.appendChild(placeholder);
+
+(allowedStatuses[order.status] || []).forEach(status => {
+  const option = document.createElement('option');
+  option.value = status;
+  option.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  statusSelect.appendChild(option);
+});
+
+const updateButton = document.createElement('button');
+updateButton.textContent = 'Update Order';
+updateButton.type = 'button';
+
+updateButton.onclick = async function() {
+  const newStatus = statusSelect.value;
+
+  if (!newStatus) {
+    alert('Please choose a new status.');
+    return;
+  }
+
+  const { error } = await supabaseClient.rpc(
+    'seller_update_order_status',
+    {
+      p_order_id: order.id,
+      p_status: newStatus
+    }
+  );
+
+  if (error) {
+    alert('Order update failed: ' + error.message);
+    return;
+  }
+
+  alert('Order status updated successfully.');
+  loadSellerOrders(userId);
+};
+
+item.append(details, statusSelect, updateButton);
     container.appendChild(item);
   });
 }
