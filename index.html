@@ -230,6 +230,15 @@ footer a:hover{color:#ffb45e}
     required
   ></textarea>
 
+ <label for="sellerDeliveryFee">Delivery Fee (KES)</label>
+<input
+  type="number"
+  id="sellerDeliveryFee"
+  min="0"
+  step="0.01"
+  value="0"
+  required
+/>
   <button type="submit">Save Payment Details</button>
 </form>
 <p id="sellerPaymentMessage" role="status"></p> 
@@ -1062,7 +1071,15 @@ loadSellerOrders(user.id);
   const paymentMethod = document.getElementById('sellerPaymentMethod').value;
   const paymentInstructions = document.getElementById('sellerPaymentInstructions').value.trim();
 
-  if (!paymentMethod || !paymentInstructions) {
+  const deliveryFee = Number(
+  document.getElementById('sellerDeliveryFee').value
+);
+
+if (!Number.isFinite(deliveryFee) || deliveryFee < 0) {
+  message.textContent = 'Please enter a valid delivery fee.';
+  return;
+}
+    if (!paymentMethod || !paymentInstructions) {
     message.textContent = 'Please complete all payment fields.';
     return;
   }
@@ -1071,7 +1088,8 @@ loadSellerOrders(user.id);
     'seller_update_payment_details',
     {
       p_payment_method: paymentMethod,
-      p_payment_instructions: paymentInstructions
+p_payment_instructions: paymentInstructions,
+p_delivery_fee: deliveryFee
     }
   );
 
