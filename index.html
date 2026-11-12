@@ -474,6 +474,17 @@ orderButton.onclick = async function() {
 
   const buyerId = sessionData.session.user.id;
 
+  const { data: checkoutDetails, error: checkoutError } =
+  await supabaseClient.rpc('get_seller_checkout_details', {
+    p_seller_id: product.seller_id
+  });
+
+if (checkoutError || !checkoutDetails || checkoutDetails.length === 0) {
+  alert('Seller payment details are currently unavailable.');
+  return;
+}
+
+const sellerDetails = checkoutDetails[0];
   const quantityInput = prompt(
     'Enter the quantity you want to order:'
   );
@@ -487,6 +498,21 @@ orderButton.onclick = async function() {
     return;
   }
 
+  alert(
+  'SELLER PAYMENT DETAILS\n\n' +
+  'Payment method: ' + (sellerDetails.payment_method || 'Contact seller') +
+  '\nInstructions: ' + (sellerDetails.payment_instructions || 'Contact seller') +
+  '\nDelivery coverage: ' + (sellerDetails.delivery_coverage || 'Confirm with seller')
+);
+
+const deliveryMethod = prompt(
+  'Enter your preferred delivery method (e.g. Delivery or Collection):'
+);
+
+if (deliveryMethod === null || !deliveryMethod.trim()) {
+  alert('Please enter a delivery method to continue.');
+  return;
+}
   const { error } = await supabaseClient
     .from('orders')
     .insert({
@@ -496,7 +522,10 @@ orderButton.onclick = async function() {
       quantity: quantity,
       agreed_unit_price: product.price,
       delivery_fee: 0,
-      status: 'pending'
+delivery_method: deliveryMethod.trim(),
+payment_method: sellerDetails.payment_method || null,
+payment_instructions_snapshot: sellerDetails.payment_instructions || null,
+status: 'pending'
     });
 
   if (error) {
