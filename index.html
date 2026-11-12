@@ -1180,7 +1180,17 @@ checkUserSession();
     'cancelled'
   ];
 
-  orders.forEach(order => {
+ const { data: buyerNames, error: buyerNamesError } =
+  await supabaseClient.rpc('seller_get_order_buyer_names');
+
+if (buyerNamesError) {
+  console.error('Buyer names loading failed:', buyerNamesError.message);
+}
+
+const buyerNameMap = new Map(
+  (buyerNames || []).map(item => [item.order_id, item.buyer_name])
+);
+   orders.forEach(order => {
     const row = document.createElement('tr');
 
     const values = [
