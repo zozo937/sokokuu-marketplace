@@ -193,7 +193,55 @@ footer a:hover{color:#ffb45e}
 </div>
   </div>
 </section>
- <section id="adminDashboard" style="display:none; padding:40px 20px;">
+ 
+<section id="sellerDashboard" style="display:none; padding:40px 20px;">
+  <div class="container">
+    <h2>My Seller Dashboard</h2>
+    <p>Manage your SOKOKUU products.</p>
+
+    <div id="sellerStatusMessage" role="status"></div>
+
+    <div id="sellerProductArea" style="display:none;">
+      <h3>Add a New Product</h3>
+
+      <form id="sellerProductForm">
+        <input id="productTitle" type="text"
+          placeholder="Product name" required>
+
+        <textarea id="productDescription"
+          placeholder="Product description" required></textarea>
+
+        <input id="productCategory" type="text"
+          placeholder="Product category" required>
+
+        <input id="productPrice" type="number"
+          placeholder="Selling price (KES)" min="0" step="0.01" required>
+
+        <input id="productWholesalePrice" type="number"
+          placeholder="Wholesale price (optional)" min="0" step="0.01">
+
+        <input id="productMinimumWholesale" type="number"
+          placeholder="Minimum wholesale quantity (optional)" min="1">
+
+        <input id="productStock" type="number"
+          placeholder="Available stock" min="0" required>
+
+        <input id="productCounty" type="text"
+          placeholder="County" required>
+
+        <input id="productTown" type="text"
+          placeholder="Town" required>
+
+        <button type="submit">Add Product</button>
+      </form>
+
+      <h3>My Products</h3>
+      <div id="mySellerProducts">Your products will appear here.</div>
+    </div>
+  </div>
+</section>
+
+  <section id="adminDashboard" style="display:none; padding:40px 20px;">
   <div class="container">
     <h2>SOKOKUU Administration</h2>
     <p>Manage the SOKOKUU marketplace.</p>
@@ -399,7 +447,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   document.getElementById('userSession').style.display = 'block';
   document.getElementById('signedInUser').textContent =
     'Signed in as: ' + data.user.email;
-checkAdminAccess();
+loadSellerDashboard(data.user);
+    checkAdminAccess();
   }
 });
 document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
@@ -444,6 +493,38 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
       'Set a new password for your SOKOKUU account.';
   }
 });
+  async function loadSellerDashboard(user) {
+  const dashboard = document.getElementById('sellerDashboard');
+  const message = document.getElementById('sellerStatusMessage');
+  const productArea = document.getElementById('sellerProductArea');
+
+  dashboard.style.display = 'none';
+  productArea.style.display = 'none';
+
+  const { data: seller, error } = await supabaseClient
+    .from('seller_profiles')
+    .select('status')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Seller profile check failed:', error.message);
+    return;
+  }
+
+  if (!seller) return;
+
+  dashboard.style.display = 'block';
+
+  if (seller.status === 'approved') {
+    message.textContent = 'Your seller account is approved.';
+    productArea.style.display = 'block';
+  } else if (seller.status === 'pending') {
+    message.textContent = 'Your seller application is pending approval. You can add products once approved.';
+  } else {
+    message.textContent = 'Your seller application has not been approved.';
+  }
+}
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
@@ -456,6 +537,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     document.getElementById('userSession').style.display = 'block';
     document.getElementById('signedInUser').textContent =
       'Signed in as: ' + data.session.user.email;
+  loadSellerDashboard(data.session.user);
   }
 }
 
