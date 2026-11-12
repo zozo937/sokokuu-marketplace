@@ -567,7 +567,47 @@ async function loadMySellerProducts(userId) {
       ' | Stock: ' + product.stock +
       ' | Status: ' + product.status;
 
-    item.append(title, details);
+    const publishButton = document.createElement('button');
+publishButton.textContent = 'Publish';
+publishButton.type = 'button';
+publishButton.disabled = product.status === 'active';
+
+publishButton.onclick = async function() {
+  const { error } = await supabaseClient
+    .from('products')
+    .update({ status: 'active' })
+    .eq('id', product.id)
+    .eq('seller_id', userId);
+
+  if (error) {
+    alert('Could not publish product: ' + error.message);
+    return;
+  }
+
+  loadMySellerProducts(userId);
+};
+
+const soldOutButton = document.createElement('button');
+soldOutButton.textContent = 'Mark sold out';
+soldOutButton.type = 'button';
+soldOutButton.disabled = product.status === 'sold_out';
+
+soldOutButton.onclick = async function() {
+  const { error } = await supabaseClient
+    .from('products')
+    .update({ status: 'sold_out' })
+    .eq('id', product.id)
+    .eq('seller_id', userId);
+
+  if (error) {
+    alert('Could not update product: ' + error.message);
+    return;
+  }
+
+  loadMySellerProducts(userId);
+};
+
+item.append(title, details, publishButton, soldOutButton);
     container.appendChild(item);
   });
 } 
