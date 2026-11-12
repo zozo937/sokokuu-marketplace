@@ -378,7 +378,63 @@ document.getElementById("searchInput").addEventListener("input",updateProducts);
 
   console.log('SOKOKUU database connection initialized');
 
-function showAccountForm(type) {
+async function loadPublicProducts() {
+  const grid = document.getElementById('productGrid');
+  const emptyMessage = document.getElementById('emptyMessage');
+
+  const { data: products, error } = await supabaseClient
+    .from('products')
+    .select('id, title, description, category, price, county, town, stock')
+    .eq('status', 'active')
+    .gt('stock', 0)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Public products loading failed:', error.message);
+    emptyMessage.textContent = 'Products could not be loaded. Please try again.';
+    return;
+  }
+
+  grid.replaceChildren();
+
+  if (!products || products.length === 0) {
+    emptyMessage.textContent = 'No products available yet.';
+    emptyMessage.style.display = 'block';
+    return;
+  }
+
+  emptyMessage.style.display = 'none';
+
+  products.forEach(product => {
+    const article = document.createElement('article');
+    article.className = 'product';
+
+    const image = document.createElement('div');
+    image.className = 'product-image';
+    image.textContent = '📦';
+
+    const info = document.createElement('div');
+    info.className = 'product-info';
+
+    const title = document.createElement('h3');
+    title.textContent = product.title;
+
+    const price = document.createElement('div');
+    price.className = 'price';
+    price.textContent = 'KSh ' + Number(product.price).toLocaleString('en-KE');
+
+    const location = document.createElement('div');
+    location.className = 'location';
+    location.textContent = '📍 ' + [product.town, product.county, 'Kenya'].filter(Boolean).join(', ');
+
+    info.append(title, price, location);
+    article.append(image, info);
+    grid.appendChild(article);
+  });
+}
+
+loadPublicProducts();
+  function showAccountForm(type) {
   document.getElementById('loginForm').style.display =
     type === 'login' ? 'block' : 'none';
 
