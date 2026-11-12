@@ -741,16 +741,18 @@ details.textContent =
 
   const { data: orders, error } = await supabaseClient
     .from('orders')
-    .select(`
-      id,
-      buyer_id,
-      product_id,
-      quantity,
-      agreed_unit_price,
-      delivery_fee,
-      status,
-      created_at
-    `)
+   .select(`
+  id,
+  buyer_id,
+  product_id,
+  quantity,
+  agreed_unit_price,
+  delivery_fee,
+  status,
+  created_at,
+  products ( title ),
+  profiles ( full_name )
+`)
     .eq('seller_id', userId)
     .order('created_at', { ascending: false });
 
@@ -773,13 +775,23 @@ details.textContent =
     item.style.marginBottom = '10px';
     item.style.border = '1px solid #ddd';
 
-    const details = document.createElement('p');
-    details.textContent =
-      'Order ID: ' + order.id +
-      ' | Product ID: ' + order.product_id +
-      ' | Quantity: ' + order.quantity +
-      ' | Unit price: KES ' + order.agreed_unit_price +
-      ' | Status: ' + order.status;
+    const product = Array.isArray(order.products)
+  ? order.products[0]
+  : order.products;
+
+const buyer = Array.isArray(order.profiles)
+  ? order.profiles[0]
+  : order.profiles;
+
+const details = document.createElement('p');
+details.textContent =
+  'Product: ' + (product?.title || 'Details unavailable') +
+  ' | Buyer: ' + (buyer?.full_name || 'Details unavailable') +
+  ' | Quantity: ' + order.quantity +
+  ' | Unit price: KES ' + order.agreed_unit_price +
+  ' | Total: KES ' + (order.quantity * order.agreed_unit_price) +
+  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+  ' | Status: ' + order.status;
 
     const statusSelect = document.createElement('select');
 
