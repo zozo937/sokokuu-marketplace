@@ -494,7 +494,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   }
 });
   async function loadSellerDashboard(user) {
-  const dashboard = document.getElementById('sellerDashboard');
+   const dashboard = document.getElementById('sellerDashboard');
   const message = document.getElementById('sellerStatusMessage');
   const productArea = document.getElementById('sellerProductArea');
 
@@ -519,12 +519,116 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   if (seller.status === 'approved') {
     message.textContent = 'Your seller account is approved.';
     productArea.style.display = 'block';
+ loadMySellerProducts(user.id);
   } else if (seller.status === 'pending') {
     message.textContent = 'Your seller application is pending approval. You can add products once approved.';
   } else {
     message.textContent = 'Your seller application has not been approved.';
   }
 }
+ 
+async function loadMySellerProducts(userId) {
+  const container = document.getElementById('mySellerProducts');
+
+  container.textContent = 'Loading your products...';
+
+  const { data: products, error } = await supabaseClient
+    .from('products')
+    .select('id, title, price, stock, status, category')
+    .eq('seller_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Product loading failed:', error.message);
+    container.textContent = 'Could not load your products.';
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!products || products.length === 0) {
+    container.textContent = 'You have not listed any products yet.';
+    return;
+  }
+
+  products.forEach(product => {
+    const item = document.createElement('div');
+    item.style.padding = '12px';
+    item.style.marginBottom = '10px';
+    item.style.border = '1px solid #ddd';
+
+    const title = document.createElement('h4');
+    title.textContent = product.title;
+
+    const details = document.createElement('p');
+    details.textContent =
+      'Category: ' + product.category +
+      ' | Price: KES ' + product.price +
+      ' | Stock: ' + product.stock +
+      ' | Status: ' + product.status;
+
+    item.append(title, details);
+    container.appendChild(item);
+  });
+} 
+  document.getElementById('sellerProductForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+
+  if (!sessionData.session) {
+    alert('Please log in first.');
+    return;
+  }
+
+  const user = sessionData.session.user;
+
+  const { data: seller, error: sellerError } = await supabaseClient
+    .from('seller_profiles')
+    .select('status')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (sellerError || !seller || seller.status !== 'approved') {
+    alert('Only approved sellers can add products.');
+    return;
+  }
+
+  const wholesaleValue = document.getElementById('productWholesalePrice').value;
+  const minimumValue = document.getElementById('productMinimumWholesale').value;
+
+  const product = {
+    seller_id: user.id,
+    title: document.getElementById('productTitle').value.trim(),
+    description: document.getElementById('productDescription').value.trim(),
+    category: document.getElementById('productCategory').value.trim(),
+    price: Number(document.getElementById('productPrice').value),
+    wholesale_price: wholesaleValue ? Number(wholesaleValue) : null,
+    minimum_wholesale_quantity: minimumValue ? Number(minimumValue) : null,
+    stock: Number(document.getElementById('productStock').value),
+    county: document.getElementById('productCounty').value.trim(),
+    town: document.getElementById('productTown').value.trim(),
+    status: 'draft'
+  };
+
+  if (product.wholesale_price !== null && product.wholesale_price > product.price) {
+    alert('Wholesale price should not be higher than the selling price.');
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('products')
+    .insert(product);
+
+  if (error) {
+    alert('Product could not be added: ' + error.message);
+    return;
+  }
+
+  alert('Product added successfully!');
+  document.getElementById('sellerProductForm').reset();
+  loadMySellerProducts(user.id);
+});
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
