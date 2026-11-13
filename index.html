@@ -279,6 +279,12 @@ footer a:hover{color:#ffb45e}
   accept="image/jpeg,image/png,image/webp"
   required
 > 
+ <img
+  id="productImagePreview"
+  src=""
+  alt="Product photo preview"
+  style="display:none; width:200px; height:150px; object-fit:cover; margin-top:10px; border-radius:8px;"
+>    
         <button type="submit">Add Product</button>
       </form>
 
@@ -1033,7 +1039,20 @@ item.append(title, details, publishButton, soldOutButton);
   });
 } 
  
-document.getElementById('sellerProductForm').addEventListener('submit', async function(e) {
+document.getElementById('productImage').addEventListener('change', function() {
+  const preview = document.getElementById('productImagePreview');
+  const file = this.files[0];
+
+  if (!file) {
+    preview.src = '';
+    preview.style.display = 'none';
+    return;
+  }
+
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+});
+  document.getElementById('sellerProductForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const { data: sessionData } = await supabaseClient.auth.getSession();
