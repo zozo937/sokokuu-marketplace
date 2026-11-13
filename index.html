@@ -272,6 +272,13 @@ footer a:hover{color:#ffb45e}
         <input id="productTown" type="text"
           placeholder="Town" required>
 
+      <label for="productImage">Product Photo</label>
+<input
+  type="file"
+  id="productImage"
+  accept="image/jpeg,image/png,image/webp"
+  required
+> 
         <button type="submit">Add Product</button>
       </form>
 
@@ -426,7 +433,7 @@ async function loadPublicProducts() {
 
   const { data: products, error } = await supabaseClient
     .from('products')
-    .select('id, seller_id, title, description, category, price, county, town, stock')
+    .select('id, seller_id, title, description, category, price, county, town, stock, image_url')
     .eq('status', 'active')
     .gt('stock', 0)
     .order('created_at', { ascending: false });
@@ -451,10 +458,16 @@ async function loadPublicProducts() {
     const article = document.createElement('article');
     article.className = 'product';
 
-    const image = document.createElement('div');
-    image.className = 'product-image';
-    image.textContent = '📦';
+   const image = document.createElement('img');
+image.className = 'product-image';
+image.src = product.image_url || 'https://placehold.co/400x300?text=No+Product+Image';
+image.alt = product.title;
+image.style.width = '100%';
+image.style.height = '200px';
+image.style.objectFit = 'cover';
+image.style.borderRadius = '8px';
 
+article.appendChild(image);
     const info = document.createElement('div');
     info.className = 'product-info';
 
@@ -935,7 +948,7 @@ item.append(details, statusSelect, updateButton);
 
   const { data: products, error } = await supabaseClient
     .from('products')
-    .select('id, title, price, stock, status, category')
+    .select('id, title, price, stock, status, category, image_url')
     .eq('seller_id', userId)
     .order('created_at', { ascending: false });
 
@@ -958,6 +971,13 @@ item.append(details, statusSelect, updateButton);
     item.style.marginBottom = '10px';
     item.style.border = '1px solid #ddd';
 
+    const productImage = document.createElement('img');
+productImage.src = product.image_url || 'https://placehold.co/400x300?text=No+Product+Image';
+productImage.alt = product.title;
+productImage.style.width = '150px';
+productImage.style.height = '120px';
+productImage.style.objectFit = 'cover';
+productImage.style.borderRadius = '8px';
     const title = document.createElement('h4');
     title.textContent = product.title;
 
@@ -1012,7 +1032,8 @@ item.append(title, details, publishButton, soldOutButton);
     container.appendChild(item);
   });
 } 
-  document.getElementById('sellerProductForm').addEventListener('submit', async function(e) {
+ 
+document.getElementById('sellerProductForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const { data: sessionData } = await supabaseClient.auth.getSession();
@@ -1023,6 +1044,22 @@ item.append(title, details, publishButton, soldOutButton);
   }
 
   const user = sessionData.session.user;
+  const imageFile = document.getElementById('productImage').files[0];
+
+  if (!imageFile) {
+    alert('Please select a product photo.');
+    return;
+  }
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(imageFile.type)) {
+    alert('Only JPEG, PNG and WebP images are allowed.');
+    return;
+  }
+
+  if (imageFile.size > 5 * 1024 * 1024) {
+    alert('Image must not exceed 5 MB.');
+    return;
+  }
 
   const { data: seller, error: sellerError } = await supabaseClient
     .from('seller_profiles')
@@ -1038,24 +1075,48 @@ item.append(title, details, publishButton, soldOutButton);
   const wholesaleValue = document.getElementById('productWholesalePrice').value;
   const minimumValue = document.getElementById('productMinimumWholesale').value;
 
+  const wholesalePrice = wholesaleValue ? Number(wholesaleValue) : null;
+
+  if (wholesalePrice !== null && wholesalePrice > Number(document.getElementById('productPrice').value)) {
+    alert('Wholesale price should not be higher than the selling price.');
+    return;
+  }
+
+  const safeFileName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const imagePath = user.id + '/' + Date.now() + '-' + safeFileName;
+
+  const { error: uploadError } = await supabaseClient
+    .storage
+    .from('product-images')
+    .upload(imagePath, imageFile, {
+      contentType: imageFile.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    alert('Image upload failed: ' + uploadError.message);
+    return;
+  }
+
+  const { data: publicImageData } = supabaseClient
+    .storage
+    .from('product-images')
+    .getPublicUrl(imagePath);
+
   const product = {
     seller_id: user.id,
     title: document.getElementById('productTitle').value.trim(),
     description: document.getElementById('productDescription').value.trim(),
     category: document.getElementById('productCategory').value.trim(),
     price: Number(document.getElementById('productPrice').value),
-    wholesale_price: wholesaleValue ? Number(wholesaleValue) : null,
+    wholesale_price: wholesalePrice,
     minimum_wholesale_quantity: minimumValue ? Number(minimumValue) : null,
     stock: Number(document.getElementById('productStock').value),
     county: document.getElementById('productCounty').value.trim(),
     town: document.getElementById('productTown').value.trim(),
+    image_url: publicImageData.publicUrl,
     status: 'draft'
   };
-
-  if (product.wholesale_price !== null && product.wholesale_price > product.price) {
-    alert('Wholesale price should not be higher than the selling price.');
-    return;
-  }
 
   const { error } = await supabaseClient
     .from('products')
@@ -1066,12 +1127,13 @@ item.append(title, details, publishButton, soldOutButton);
     return;
   }
 
-  alert('Product added successfully!');
+  alert('Product and photo added successfully!');
+
   document.getElementById('sellerProductForm').reset();
   loadMySellerProducts(user.id);
-loadSellerOrders(user.id);
-    loadSellerOrders(user.id);
-  });
+  loadSellerOrders(user.id);
+});
+
   document.getElementById('sellerPaymentForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
