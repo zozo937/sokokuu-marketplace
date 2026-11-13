@@ -494,6 +494,7 @@ if (checkoutError || !checkoutDetails || checkoutDetails.length === 0) {
 }
 
 const sellerDetails = checkoutDetails[0];
+ console.log('Seller checkout details:', sellerDetails);
   const quantityInput = prompt(
     'Enter the quantity you want to order:'
   );
@@ -511,7 +512,8 @@ const sellerDetails = checkoutDetails[0];
   'SELLER PAYMENT DETAILS\n\n' +
   'Payment method: ' + (sellerDetails.payment_method || 'Contact seller') +
   '\nInstructions: ' + (sellerDetails.payment_instructions || 'Contact seller') +
-  '\nDelivery coverage: ' + (sellerDetails.delivery_coverage || 'Confirm with seller')
+  '\nDelivery coverage: ' + (sellerDetails.delivery_coverage || 'Confirm with seller') +
+  '\nDelivery fee: KES ' + Number(sellerDetails.delivery_fee || 0)
 );
 
 const deliveryMethod = prompt(
@@ -769,9 +771,10 @@ details.textContent =
   ' | Seller: ' + (seller?.business_name || 'Details unavailable') +
   ' | Quantity: ' + order.quantity +
   ' | Unit price: KES ' + order.agreed_unit_price +
-  ' | Total: KES ' + (order.quantity * order.agreed_unit_price) +
-  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
-  ' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
+ ' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
+' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
+' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
   ' | Payment method: ' + (order.payment_method || 'To be agreed') +
   ' | Status: ' + order.status;
 
@@ -866,8 +869,9 @@ details.textContent =
   ' | Buyer: ' + (buyerName || 'Name unavailable') +
   ' | Quantity: ' + order.quantity +
   ' | Unit price: KES ' + order.agreed_unit_price +
-  ' | Total: KES ' + (order.quantity * order.agreed_unit_price) +
-  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
+' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
   ' | Status: ' + order.status;
 
     const statusSelect = document.createElement('select');
