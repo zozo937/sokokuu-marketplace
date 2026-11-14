@@ -1314,7 +1314,8 @@ checkUserSession();
     container.appendChild(row);
   });
 }
-  async function loadProductManagement() {
+  
+async function loadProductManagement() {
   const container = document.getElementById('productManagementRows');
 
   container.innerHTML =
@@ -1350,7 +1351,7 @@ checkUserSession();
       'KES ' + Number(product.price).toLocaleString(),
       product.stock,
       (product.town || '') + ', ' + (product.county || ''),
-      product.status
+      product.status || 'Not specified'
     ];
 
     values.forEach(value => {
@@ -1366,7 +1367,8 @@ checkUserSession();
     container.appendChild(row);
   });
 }
- async function loadOrderManagement() {
+
+async function loadOrderManagement() {
   const container = document.getElementById('orderManagementRows');
 
   container.innerHTML =
