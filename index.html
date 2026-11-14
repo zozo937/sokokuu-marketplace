@@ -1191,7 +1191,8 @@ p_delivery_fee: deliveryFee
 
   message.textContent = 'Payment details saved successfully!';
 });
-  async function checkUserSession() {
+
+async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
   if (error) {
@@ -1199,14 +1200,42 @@ p_delivery_fee: deliveryFee
     return;
   }
 
-  if (data.session) {
-    document.getElementById('userSession').style.display = 'block';
-    document.getElementById('signedInUser').textContent =
-      'Signed in as: ' + data.session.user.email;
-  loadSellerDashboard(data.session.user);
-  loadBuyerOrders(data.session.user.id);
+  if (!data.session) {
+    return;
   }
+
+  const user = data.session.user;
+
+  document.getElementById('userSession').style.display = 'block';
+  document.getElementById('signedInUser').textContent =
+    'Signed in as: ' + user.email;
+
+  // Check whether this user is the administrator
+  const { data: isAdmin, error: adminError } =
+    await supabaseClient.rpc('is_sokokuu_admin');
+
+  if (adminError) {
+    console.error('Admin check failed:', adminError.message);
+    return;
+  }
+
+  if (isAdmin === true) {
+    document.getElementById('adminDashboard').style.display = 'block';
+    document.getElementById('adminMessage').textContent =
+      'Administrator access confirmed.';
+    document.getElementById('adminContent').style.display = 'block';
+
+    loadSellerManagement();
+
+    return;
+  }
+
+  // Normal buyer and seller accounts
+  loadSellerDashboard(user);
+  loadBuyerOrders(user.id);
 }
+
+
 
 checkUserSession();
  async function loadSellerManagement() {
