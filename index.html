@@ -624,9 +624,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
   });
 
-  message.textContent = error
-    ? error.message
-    : 'Registration submitted. Check your email to confirm your account.';
+message.textContent = error
+  ? error.message
+  : 'Registration successful! You can now log in to SOKOKUU.';
 });
 
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
