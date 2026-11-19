@@ -744,17 +744,21 @@ async function loadBuyerOrders(userId) {
     .from('orders')
     .select(`
   id,
-  product_id,
-  seller_id,
-  quantity,
-  agreed_unit_price,
-  delivery_fee,
-  delivery_method,
-  payment_method,
-  status,
-  created_at,
-  products ( title, county, town ),
-  seller_profiles ( business_name, county, town )
+product_id,
+seller_id,
+quantity,
+agreed_unit_price,
+delivery_fee,
+delivery_method,
+payment_method,
+payment_instructions_snapshot,
+payment_status,
+mpesa_transaction_code,
+payment_confirmed_at,
+status,
+created_at,
+products ( title, county, town ),
+seller_profiles ( business_name, county, town )
 `)
     .eq('buyer_id', userId)
     .order('created_at', { ascending: false });
@@ -793,15 +797,68 @@ details.textContent =
   ' | Seller: ' + (seller?.business_name || 'Details unavailable') +
   ' | Quantity: ' + order.quantity +
   ' | Unit price: KES ' + order.agreed_unit_price +
- ' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
-' | Delivery fee: KES ' + (order.delivery_fee || 0) +
-' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
-' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
+  ' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
+  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+  ' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
+  ' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
   ' | Payment method: ' + (order.payment_method || 'To be agreed') +
-  ' | Status: ' + order.status;
+  ' | Payment status: ' + (order.payment_status === 'paid' ? 'PAID' : order.payment_status === 'submitted' ? 'Awaiting seller verification' : 'UNPAID') +
+  ' | Order status: ' + order.status;
 
-    item.appendChild(details);
+item.appendChild(details);
 
+  if (/collection/i.test(order.delivery_method || '')) {
+  const collectionNote = document.createElement('p');
+  collectionNote.textContent = 'Payment: Pay the seller when collecting your order.';
+  item.appendChild(collectionNote);
+} else {
+  const instructions = document.createElement('p');
+  instructions.textContent =
+    'Pay the seller directly using these instructions: ' +
+    (order.payment_instructions_snapshot || 'Contact the seller for payment instructions.');
+  item.appendChild(instructions);
+
+  if (order.payment_status !== 'paid' && order.payment_status !== 'submitted') {
+    const codeInput = document.createElement('input');
+    codeInput.type = 'text';
+    codeInput.placeholder = 'Enter M-Pesa transaction code';
+
+    const submitCodeButton = document.createElement('button');
+    submitCodeButton.type = 'button';
+    submitCodeButton.textContent = 'Submit M-Pesa Code';
+
+    submitCodeButton.onclick = async function() {
+      const transactionCode = codeInput.value.trim();
+
+      if (!transactionCode) {
+        alert('Please enter your M-Pesa transaction code.');
+        return;
+      }
+
+      const { error } = await supabaseClient.rpc(
+        'buyer_submit_mpesa_code',
+        {
+          p_order_id: order.id,
+          p_transaction_code: transactionCode
+        }
+      );
+
+      if (error) {
+        alert('Could not submit payment code: ' + error.message);
+        return;
+      }
+
+      alert('M-Pesa code submitted. Await seller verification.');
+      loadBuyerOrders(userId);
+    };
+
+    item.append(codeInput, submitCodeButton);
+  } else if (order.payment_status === 'submitted') {
+    const waitingNote = document.createElement('p');
+    waitingNote.textContent = 'Your M-Pesa code has been submitted. Awaiting seller verification.';
+    item.appendChild(waitingNote);
+  }
+}
     if (order.status === 'shipped') {
       const receivedButton = document.createElement('button');
       receivedButton.textContent = 'Confirm Receipt';
@@ -837,15 +894,21 @@ details.textContent =
     .from('orders')
    .select(`
   id,
-  buyer_id,
-  product_id,
-  quantity,
-  agreed_unit_price,
-  delivery_fee,
-  status,
-  created_at,
-  products ( title ),
-  profiles ( full_name )
+buyer_id,
+product_id,
+quantity,
+agreed_unit_price,
+delivery_fee,
+delivery_method,
+payment_method,
+payment_instructions_snapshot,
+payment_status,
+mpesa_transaction_code,
+payment_confirmed_at,
+status,
+created_at,
+products ( title ),
+profiles ( full_name )
 `)
     .eq('seller_id', userId)
     .order('created_at', { ascending: false });
@@ -891,10 +954,14 @@ details.textContent =
   ' | Buyer: ' + (buyerName || 'Name unavailable') +
   ' | Quantity: ' + order.quantity +
   ' | Unit price: KES ' + order.agreed_unit_price +
-' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
-' | Delivery fee: KES ' + (order.delivery_fee || 0) +
-' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
-  ' | Status: ' + order.status;
+  ' | Product total: KES ' + (order.quantity * order.agreed_unit_price) +
+  ' | Delivery fee: KES ' + (order.delivery_fee || 0) +
+  ' | Grand total: KES ' + ((order.quantity * order.agreed_unit_price) + Number(order.delivery_fee || 0)) +
+  ' | Delivery method: ' + (order.delivery_method || 'To be agreed') +
+  ' | Payment method: ' + (order.payment_method || 'To be agreed') +
+  ' | Payment status: ' + (order.payment_status === 'paid' ? 'PAID' : order.payment_status === 'submitted' ? 'Awaiting verification' : 'UNPAID') +
+  ' | M-Pesa code: ' + (order.mpesa_transaction_code || 'Not submitted') +
+  ' | Order status: ' + order.status;
 
     const statusSelect = document.createElement('select');
 
@@ -946,7 +1013,47 @@ updateButton.onclick = async function() {
   loadSellerOrders(userId);
 };
 
-item.append(details, statusSelect, updateButton);
+item.append(details);
+
+if (order.payment_status !== 'paid') {
+  const confirmPaymentButton = document.createElement('button');
+  confirmPaymentButton.type = 'button';
+  confirmPaymentButton.textContent = 'Confirm Payment';
+
+  confirmPaymentButton.onclick = async function() {
+    const isCollection = /collection/i.test(order.delivery_method || '');
+
+    if (!isCollection && !order.mpesa_transaction_code) {
+      alert('The buyer has not submitted an M-Pesa transaction code.');
+      return;
+    }
+
+    const confirmed = confirm(
+      isCollection
+        ? 'Confirm that the buyer has paid you at collection?'
+        : 'Have you verified this M-Pesa payment in your account? Only confirm if the payment is received.'
+    );
+
+    if (!confirmed) return;
+
+    const { error } = await supabaseClient.rpc(
+      'seller_confirm_order_payment',
+      { p_order_id: order.id }
+    );
+
+    if (error) {
+      alert('Payment confirmation failed: ' + error.message);
+      return;
+    }
+
+    alert('Payment marked as PAID.');
+    loadSellerOrders(userId);
+  };
+
+  item.appendChild(confirmPaymentButton);
+}
+
+item.append(statusSelect, updateButton);
     container.appendChild(item);
   });
 }
