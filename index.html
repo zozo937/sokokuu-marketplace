@@ -450,6 +450,44 @@ footer a:hover{color:#ffb45e}
     </table>
   </div>
 </div>
+<h3>Black Friday & Offers Management</h3>
+
+<div id="offersManagement" style="padding:20px; border:1px solid #ddd; border-radius:10px; margin-bottom:25px;">
+
+  <h4>Create Product Offer</h4>
+
+  <form id="offerForm">
+
+    <label>Select Product</label>
+    <select id="offerProduct" required style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+      <option value="">Loading products...</option>
+    </select>
+
+    <label>Campaign Name</label>
+    <input id="offerCampaign" type="text" value="Black Friday" required style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+
+    <label>Original Price (KES)</label>
+    <input id="offerOriginalPrice" type="number" min="0.01" step="0.01" required readonly style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+
+    <label>Discounted Price (KES)</label>
+    <input id="offerDiscountedPrice" type="number" min="0.01" step="0.01" required style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+
+    <label>Campaign Start</label>
+    <input id="offerStart" type="datetime-local" required style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+
+    <label>Campaign End</label>
+    <input id="offerEnd" type="datetime-local" required style="display:block;width:100%;padding:12px;margin:8px 0 15px;">
+
+    <button type="submit" class="primary-btn">Create Offer</button>
+
+    <p id="offerMessage" role="status"></p>
+
+  </form>
+
+  <h4>Existing Offers</h4>
+  <div id="offerList">Loading offers...</div>
+
+</div>  
     </div>
   </div>
 </section>
@@ -1653,6 +1691,127 @@ const buyerNameMap = new Map(
     container.appendChild(row);
   });
 }
+ 
+window.loadOfferManagement = async function() {
+  const productSelect = document.getElementById('offerProduct');
+  const originalPriceInput = document.getElementById('offerOriginalPrice');
+  const discountedPriceInput = document.getElementById('offerDiscountedPrice');
+  const form = document.getElementById('offerForm');
+  const message = document.getElementById('offerMessage');
+  const offerList = document.getElementById('offerList');
+
+  if (!productSelect || !form) return;
+
+  const { data: products, error: productError } = await supabaseClient
+    .from('products')
+    .select('id, title, price')
+    .order('title');
+
+  if (productError) {
+    message.textContent = 'Could not load products: ' + productError.message;
+    return;
+  }
+
+  productSelect.innerHTML = '<option value="">Select a product</option>';
+
+  products.forEach(product => {
+    const option = document.createElement('option');
+    option.value = product.id;
+    option.textContent = product.title;
+    option.dataset.price = product.price;
+    productSelect.appendChild(option);
+  });
+
+  productSelect.addEventListener('change', function() {
+    const selected = productSelect.options[productSelect.selectedIndex];
+    originalPriceInput.value = selected.dataset.price || '';
+  });
+
+  async function displayOffers() {
+    const { data: offers, error } = await supabaseClient
+      .from('product_offers')
+      .select('id, campaign_name, original_price, discounted_price, starts_at, ends_at, products(title)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      offerList.textContent = 'Could not load offers: ' + error.message;
+      return;
+    }
+
+    offerList.innerHTML = '';
+
+    if (!offers.length) {
+      offerList.textContent = 'No offers have been created yet.';
+      return;
+    }
+
+    offers.forEach(offer => {
+      const item = document.createElement('div');
+      item.style.padding = '12px';
+      item.style.borderBottom = '1px solid #ddd';
+
+      const details = document.createElement('p');
+      details.textContent =
+        (offer.products?.title || 'Product') +
+        ' — ' + offer.campaign_name +
+        ' | Original: KES ' + offer.original_price +
+        ' | Offer: KES ' + offer.discounted_price +
+        ' | Ends: ' + new Date(offer.ends_at).toLocaleString();
+
+      item.appendChild(details);
+      offerList.appendChild(item);
+    });
+  }
+
+  if (!form.dataset.bound) {
+    form.dataset.bound = 'true';
+
+    form.addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const productId = productSelect.value;
+      const originalPrice = Number(originalPriceInput.value);
+      const discountedPrice = Number(discountedPriceInput.value);
+      const startsAt = new Date(document.getElementById('offerStart').value);
+      const endsAt = new Date(document.getElementById('offerEnd').value);
+
+      if (!productId || !originalPrice || !discountedPrice ||
+          discountedPrice >= originalPrice ||
+          isNaN(startsAt.getTime()) ||
+          isNaN(endsAt.getTime()) ||
+          endsAt <= startsAt) {
+        message.textContent = 'Please check the product, prices and campaign dates.';
+        return;
+      }
+
+      message.textContent = 'Creating offer...';
+
+      const { error } = await supabaseClient
+        .from('product_offers')
+        .upsert({
+          product_id: productId,
+          campaign_name: document.getElementById('offerCampaign').value,
+          original_price: originalPrice,
+          discounted_price: discountedPrice,
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString()
+        }, { onConflict: 'product_id' });
+
+      if (error) {
+        message.textContent = 'Offer could not be created: ' + error.message;
+        return;
+      }
+
+      message.textContent = 'Offer created successfully!';
+      form.reset();
+      originalPriceInput.value = '';
+      await displayOffers();
+    });
+  }
+
+  await displayOffers();
+};
+
   window.checkAdminAccess = async function() {
   const dashboard = document.getElementById('adminDashboard');
   const message = document.getElementById('adminMessage');
@@ -1681,6 +1840,7 @@ const buyerNameMap = new Map(
     loadSellerManagement();
     loadProductManagement();
    loadOrderManagement();
+       loadOfferManagement();
     message.textContent = 'Administrator access verified.';
   } else {
     dashboard.style.display = 'none';
