@@ -25,7 +25,63 @@ nav a:hover{color:#ffb45e}
 .search input{flex:1;min-width:0;padding:13px;border:0;outline:0;font-size:15px}
 .search button{background:var(--orange);border:0;border-radius:6px;padding:0 22px;font-weight:bold;cursor:pointer}
 .hero-note{font-size:12px!important;margin-top:13px!important}
-.container{max-width:1200px;margin:auto;padding:35px 5%}
+.black-friday-banner{
+  background:linear-gradient(120deg,#080808,#242424,#080808);
+  color:white;
+  text-align:center;
+  padding:45px 20px;
+  border-bottom:4px solid #ffb000;
+}
+
+.black-friday-content{
+  max-width:900px;
+  margin:auto;
+}
+
+.bf-label{
+  display:inline-block;
+  background:#ffb000;
+  color:#111;
+  padding:7px 16px;
+  border-radius:30px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+.black-friday-banner h2{
+  color:#ffb000;
+  font-size:clamp(30px,5vw,52px);
+  margin:15px 0 10px;
+  font-weight:900;
+}
+
+.black-friday-banner p{
+  color:#f1f1f1;
+  font-size:17px;
+  margin-bottom:25px;
+}
+
+.bf-button{
+  display:inline-block;
+  background:#ffb000;
+  color:#111;
+  padding:14px 28px;
+  border-radius:7px;
+  font-weight:900;
+  text-decoration:none;
+}
+
+.bf-button:hover{
+  background:#fff;
+}
+
+.bf-note{
+  margin-top:18px;
+  color:#ccc;
+  font-size:12px;
+}
+  .container{max-width:1200px;margin:auto;padding:35px 5%}
 .section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
 .section-title h2{margin:0;color:var(--navy);font-size:24px}
 .categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:13px}
@@ -68,7 +124,16 @@ footer a:hover{color:#ffb45e}
   <a class="sell-btn" href="#sell">Start Selling</a>
 </header>
 
-<section class="hero" id="home">
+<section class="black-friday-banner">
+  <div class="black-friday-content">
+    <span class="bf-label">SOKOKUU MEGA SALE</span>
+    <h2>BLACK FRIDAY IS HERE!</h2>
+    <p>Discover amazing deals from sellers across Kenya.</p>
+    <a href="#products" class="bf-button">EXPLORE DEALS</a>
+    <div class="bf-note">Shop smart. Save more. Only on SOKOKUU.</div>
+  </div>
+</section>
+  <section class="hero" id="home">
   <h1>Kenya's Nationwide Marketplace</h1>
   <p>Discover products from sellers across all 47 counties. Shop locally, buy wholesale, compare offers and connect directly with sellers.</p>
   <div class="search">
