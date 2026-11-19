@@ -561,7 +561,10 @@ const orderDeliveryFee =
 delivery_method: deliveryMethod.trim(),
 payment_method: sellerDetails.payment_method || null,
 payment_instructions_snapshot: sellerDetails.payment_instructions || null,
-status: 'pending'
+status: 'pending',
+payment_status: 'unpaid',
+mpesa_transaction_code: null,
+payment_confirmed_at: null
     });
 
   if (error) {
