@@ -915,6 +915,21 @@ article.appendChild(image);
     price.className = 'price';
 
     if (hasActiveOffer) {
+     const discountPercent = Math.round(
+  ((Number(offer.original_price) - Number(offer.discounted_price)) /
+  Number(offer.original_price)) * 100
+);
+
+const discountBadge = document.createElement('span');
+discountBadge.textContent = discountPercent + '% OFF';
+discountBadge.style.display = 'inline-block';
+discountBadge.style.background = '#e60000';
+discountBadge.style.color = '#fff';
+discountBadge.style.padding = '5px 10px';
+discountBadge.style.borderRadius = '20px';
+discountBadge.style.fontSize = '12px';
+discountBadge.style.fontWeight = '900';
+discountBadge.style.marginBottom = '8px';
       const campaign = document.createElement('div');
       campaign.textContent = offer.campaign_name.toUpperCase();
       campaign.style.color = '#d97706';
@@ -931,7 +946,7 @@ article.appendChild(image);
       newPrice.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
       newPrice.style.color = '#d97706';
 
-      price.append(campaign, oldPrice, newPrice);
+     price.append(campaign, discountBadge, oldPrice, newPrice); 
     } else {
       price.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
     }
