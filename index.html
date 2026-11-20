@@ -663,7 +663,88 @@ document.getElementById("searchInput").addEventListener("input",updateProducts);
 
   console.log('SOKOKUU database connection initialized');
 
-async function loadPublicProducts() {
+
+async function loadHotDeals() {
+  const grid = document.getElementById('hotDealsGrid');
+  if (!grid) return;
+
+  const now = new Date().toISOString();
+
+  const { data: offers, error } = await supabaseClient
+    .from('product_offers')
+    .select(`
+      product_id,
+      campaign_name,
+      original_price,
+      discounted_price,
+      ends_at,
+      products(title, image_url, county, town)
+    `)
+    .lte('starts_at', now)
+    .gt('ends_at', now)
+    .order('ends_at', { ascending: true });
+
+  if (error) {
+    console.error('Hot deals loading failed:', error.message);
+    grid.textContent = 'Offers are temporarily unavailable.';
+    return;
+  }
+
+  grid.replaceChildren();
+
+  if (!offers || offers.length === 0) {
+    grid.textContent = 'New exciting deals are coming soon!';
+    return;
+  }
+
+  offers.forEach(offer => {
+    const product = offer.products;
+    if (!product) return;
+
+    const card = document.createElement('article');
+    card.className = 'hot-deal-card';
+
+    const image = document.createElement('img');
+    image.src = product.image_url || 'https://placehold.co/400x300?text=No+Image';
+    image.alt = product.title;
+    image.loading = 'lazy';
+
+    const info = document.createElement('div');
+    info.className = 'hot-deal-info';
+
+    const campaign = document.createElement('span');
+    campaign.className = 'hot-deal-campaign';
+    campaign.textContent = offer.campaign_name;
+
+    const title = document.createElement('h3');
+    title.textContent = product.title;
+
+    const oldPrice = document.createElement('div');
+    oldPrice.className = 'hot-deal-old-price';
+    oldPrice.textContent =
+      'KSh ' + Number(offer.original_price).toLocaleString('en-KE');
+
+    const newPrice = document.createElement('div');
+    newPrice.className = 'hot-deal-new-price';
+    newPrice.textContent =
+      'KSh ' + Number(offer.discounted_price).toLocaleString('en-KE');
+
+    const location = document.createElement('p');
+    location.textContent =
+      [product.town, product.county].filter(Boolean).join(', ');
+
+    const button = document.createElement('a');
+    button.href = '#products';
+    button.className = 'bf-button';
+    button.textContent = 'SHOP NOW';
+
+    info.append(campaign, title, oldPrice, newPrice, location, button);
+    card.append(image, info);
+    grid.appendChild(card);
+  });
+}
+
+  async function loadPublicProducts() {
   const grid = document.getElementById('productGrid');
   const emptyMessage = document.getElementById('emptyMessage');
 
