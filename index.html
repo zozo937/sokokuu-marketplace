@@ -553,6 +553,19 @@ async function loadPublicProducts() {
     return;
   }
 
+  
+  const { data: activeOffers, error: offersError } = await supabaseClient
+    .from('product_offers')
+    .select('product_id, original_price, discounted_price, campaign_name, starts_at, ends_at');
+
+  if (offersError) {
+    console.error('Offers loading failed:', offersError.message);
+  }
+
+  const offersByProduct = new Map(
+    (activeOffers || []).map(offer => [offer.product_id, offer])
+  );
+
   grid.replaceChildren();
 
   if (!products || products.length === 0) {
@@ -580,12 +593,47 @@ article.appendChild(image);
     const info = document.createElement('div');
     info.className = 'product-info';
 
+ 
     const title = document.createElement('h3');
     title.textContent = product.title;
 
+    const offer = offersByProduct.get(product.id);
+    const now = new Date();
+
+    const hasActiveOffer =
+      offer &&
+      new Date(offer.starts_at) <= now &&
+      new Date(offer.ends_at) > now;
+
+    const displayPrice = hasActiveOffer
+      ? Number(offer.discounted_price)
+      : Number(product.price);
+
     const price = document.createElement('div');
     price.className = 'price';
-    price.textContent = 'KSh ' + Number(product.price).toLocaleString('en-KE');
+
+    if (hasActiveOffer) {
+      const campaign = document.createElement('div');
+      campaign.textContent = offer.campaign_name.toUpperCase();
+      campaign.style.color = '#d97706';
+      campaign.style.fontWeight = 'bold';
+      campaign.style.marginBottom = '5px';
+
+      const oldPrice = document.createElement('span');
+      oldPrice.textContent = 'KSh ' + Number(offer.original_price).toLocaleString('en-KE');
+      oldPrice.style.textDecoration = 'line-through';
+      oldPrice.style.color = '#888';
+      oldPrice.style.marginRight = '8px';
+
+      const newPrice = document.createElement('strong');
+      newPrice.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
+      newPrice.style.color = '#d97706';
+
+      price.append(campaign, oldPrice, newPrice);
+    } else {
+      price.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
+    }
+
 
     const location = document.createElement('div');
     location.className = 'location';
@@ -659,7 +707,7 @@ const orderDeliveryFee =
       seller_id: product.seller_id,
       product_id: product.id,
       quantity: quantity,
-      agreed_unit_price: product.price,
+     agreed_unit_price: displayPrice, 
       delivery_fee: orderDeliveryFee,
 delivery_method: deliveryMethod.trim(),
 payment_method: sellerDetails.payment_method || null,
