@@ -107,6 +107,114 @@ footer p,footer a{color:#d7e0eb;font-size:13px;line-height:1.7}
 footer a{margin-right:14px;text-decoration:none}
 footer a:hover{color:#ffb45e}
 @media(max-width:600px){header{justify-content:center;text-align:center}nav{justify-content:center;gap:13px}.hero{padding:45px 5%}.search button{padding:0 13px}.container{padding:28px 5%}}
+
+.hot-deals-section {
+  padding: 45px 5%;
+  background: #fffaf2;
+}
+
+.hot-deals-heading {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hot-deals-label {
+  display: inline-block;
+  background: #171717;
+  color: #ffad00;
+  padding: 7px 15px;
+  border-radius: 25px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+}
+
+.hot-deals-heading h2 {
+  color: #172b43;
+  font-size: clamp(25px, 4vw, 36px);
+  margin: 14px 0 8px;
+}
+
+.hot-deals-heading p {
+  color: #666;
+  font-size: 14px;
+}
+
+.hot-deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 22px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.hot-deal-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+}
+
+.hot-deal-card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.hot-deal-info {
+  padding: 16px;
+}
+
+.hot-deal-info h3 {
+  color: #172b43;
+  margin: 0 0 10px;
+}
+
+.hot-deal-old-price {
+  color: #888;
+  text-decoration: line-through;
+  font-size: 13px;
+}
+
+.hot-deal-new-price {
+  color: #e47700;
+  font-size: 21px;
+  font-weight: 900;
+  margin-top: 5px;
+}
+
+.hot-deal-campaign {
+  display: inline-block;
+  background: #fff0d0;
+  color: #a95600;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.hot-deals-footer {
+  text-align: center;
+  margin-top: 30px;
+}
+
+@media (max-width: 500px) {
+  .hot-deals-section {
+    padding: 30px 4%;
+  }
+
+  .hot-deals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .hot-deal-card img {
+    height: 135px;
+  }
+}
+
 </style>
 </head>
 <body>
