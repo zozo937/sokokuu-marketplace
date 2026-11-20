@@ -922,7 +922,32 @@ image.style.height = '200px';
 image.style.objectFit = 'cover';
 image.style.borderRadius = '8px';
 
-article.appendChild(image);
+const imageWrap = document.createElement('div');
+imageWrap.className = 'product-image-wrap';
+imageWrap.appendChild(image);
+
+const offer = offersByProduct.get(product.id);
+const now = new Date();
+
+const hasActiveOffer =
+  offer &&
+  new Date(offer.starts_at) <= now &&
+  new Date(offer.ends_at) > now;
+
+if (hasActiveOffer) {
+  const discountPercent = Math.round(
+    ((Number(offer.original_price) - Number(offer.discounted_price)) /
+    Number(offer.original_price)) * 100
+  );
+
+  const badge = document.createElement('span');
+  badge.className = 'product-discount-badge';
+  badge.textContent = discountPercent + '% OFF';
+
+  imageWrap.appendChild(badge);
+}
+
+article.appendChild(imageWrap);
     const info = document.createElement('div');
     info.className = 'product-info';
 
@@ -930,13 +955,7 @@ article.appendChild(image);
     const title = document.createElement('h3');
     title.textContent = product.title;
 
-    const offer = offersByProduct.get(product.id);
-    const now = new Date();
-
-    const hasActiveOffer =
-      offer &&
-      new Date(offer.starts_at) <= now &&
-      new Date(offer.ends_at) > now;
+ 
 
     const displayPrice = hasActiveOffer
       ? Number(offer.discounted_price)
@@ -944,40 +963,27 @@ article.appendChild(image);
 
     const price = document.createElement('div');
     price.className = 'price';
+if (hasActiveOffer) {
+  const campaign = document.createElement('div');
+  campaign.textContent = offer.campaign_name.toUpperCase();
+  campaign.style.color = '#d97706';
+  campaign.style.fontWeight = 'bold';
+  campaign.style.marginBottom = '5px';
 
-    if (hasActiveOffer) {
-     const discountPercent = Math.round(
-  ((Number(offer.original_price) - Number(offer.discounted_price)) /
-  Number(offer.original_price)) * 100
-);
+  const oldPrice = document.createElement('span');
+  oldPrice.textContent = 'KSh ' + Number(offer.original_price).toLocaleString('en-KE');
+  oldPrice.style.textDecoration = 'line-through';
+  oldPrice.style.color = '#888';
+  oldPrice.style.marginRight = '8px';
 
-const discountBadge = document.createElement('span');
-discountBadge.textContent = discountPercent + '% OFF';
-discountBadge.style.display = 'inline-block';
-discountBadge.style.background = '#e60000';
-discountBadge.style.color = '#fff';
-discountBadge.style.padding = '5px 10px';
-discountBadge.style.borderRadius = '20px';
-discountBadge.style.fontSize = '12px';
-discountBadge.style.fontWeight = '900';
-discountBadge.style.marginBottom = '8px';
-      const campaign = document.createElement('div');
-      campaign.textContent = offer.campaign_name.toUpperCase();
-      campaign.style.color = '#d97706';
-      campaign.style.fontWeight = 'bold';
-      campaign.style.marginBottom = '5px';
+  const newPrice = document.createElement('strong');
+  newPrice.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
+  newPrice.style.color = '#d97706';
 
-      const oldPrice = document.createElement('span');
-      oldPrice.textContent = 'KSh ' + Number(offer.original_price).toLocaleString('en-KE');
-      oldPrice.style.textDecoration = 'line-through';
-      oldPrice.style.color = '#888';
-      oldPrice.style.marginRight = '8px';
-
-      const newPrice = document.createElement('strong');
-      newPrice.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
-      newPrice.style.color = '#d97706';
-
-     price.append(campaign, discountBadge, oldPrice, newPrice); 
+  price.append(campaign, oldPrice, newPrice);
+} else {
+  price.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
+}
     } else {
       price.textContent = 'KSh ' + displayPrice.toLocaleString('en-KE');
     }
