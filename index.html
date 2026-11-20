@@ -292,6 +292,25 @@ footer a:hover{color:#ffb45e}
   }
 }
 
+.black-friday-banner {
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  overflow: hidden;
+}
+
+.banner-image-link {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
+.black-friday-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 </style>
 </head>
 <body>
@@ -309,35 +328,15 @@ footer a:hover{color:#ffb45e}
   <a class="sell-btn" href="#sell">Start Selling</a>
 </header>
 
-
 <section class="black-friday-banner">
-  <div class="black-friday-content">
-
-    <span class="bf-label">SOKOKUU • 4TH ANNIVERSARY</span>
-
-    <h2>4 YEARS OF SHOPPING.<br>4 YEARS OF SAVINGS!</h2>
-
-    <h3>BLACK FRIDAY IS HERE!</h3>
-
-    <p>Big deals. Bigger savings. Shop amazing offers from sellers across Kenya.</p>
-
-    <div class="bf-showcase">
-      <div class="bf-trolley">🛒</div>
-      <div class="bf-appliances">
-        <div class="bf-appliance">🧊<span>FRIDGES</span></div>
-        <div class="bf-appliance">🚰<span>DISPENSERS</span></div>
-      </div>
-    </div>
-
-    <div class="bf-loading">🔥 KRISII LOADING...</div>
-
-    <a href="#hotDeals" class="bf-button">SHOP THE DEALS →</a>
-
-    <div class="bf-note">Celebrating four years of bringing Kenya closer to great deals.</div>
-
-  </div>
+  <a href="#hotDeals" class="banner-image-link" aria-label="Shop Black Friday deals">
+    <img
+      src="images/black-friday-banner.png"
+      alt="SOKOKUU 4th Anniversary Black Friday Sale"
+      class="black-friday-image"
+    >
+  </a>
 </section>
-
 <section class="hot-deals-section" id="hotDeals">
   <div class="hot-deals-heading">
     <span class="hot-deals-label">SOKOKUU SPECIAL OFFERS</span>
