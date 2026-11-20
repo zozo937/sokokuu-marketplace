@@ -929,7 +929,8 @@ imageWrap.appendChild(image);
 const offer = offersByProduct.get(product.id);
 const now = new Date();
 
-const hasActiveOffer =
+console.log('PRODUCT:', product.title, 'OFFER:', offer);
+    const hasActiveOffer =
   offer &&
   new Date(offer.starts_at) <= now &&
   new Date(offer.ends_at) > now;
