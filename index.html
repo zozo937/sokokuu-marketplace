@@ -25,61 +25,138 @@ nav a:hover{color:#ffb45e}
 .search input{flex:1;min-width:0;padding:13px;border:0;outline:0;font-size:15px}
 .search button{background:var(--orange);border:0;border-radius:6px;padding:0 22px;font-weight:bold;cursor:pointer}
 .hero-note{font-size:12px!important;margin-top:13px!important}
-.black-friday-banner{
-  background:linear-gradient(120deg,#080808,#242424,#080808);
-  color:white;
-  text-align:center;
-  padding:45px 20px;
-  border-bottom:4px solid #ffb000;
+.black-friday-banner {
+  background: linear-gradient(120deg, #102b4e, #17456b, #102b4e);
+  color: white;
+  text-align: center;
+  padding: 55px 20px;
+  border-bottom: 5px solid #ff9b21;
+  overflow: hidden;
 }
 
-.black-friday-content{
-  max-width:900px;
-  margin:auto;
+.black-friday-content {
+  max-width: 1000px;
+  margin: auto;
 }
 
-.bf-label{
-  display:inline-block;
-  background:#ffb000;
-  color:#111;
-  padding:7px 16px;
-  border-radius:30px;
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:2px;
+.bf-label {
+  display: inline-block;
+  background: #ff9b21;
+  color: #102b4e;
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
 }
 
-.black-friday-banner h2{
-  color:#ffb000;
-  font-size:clamp(30px,5vw,52px);
-  margin:15px 0 10px;
-  font-weight:900;
+.black-friday-banner h2 {
+  color: #ffb45e;
+  font-size: clamp(29px, 5vw, 50px);
+  line-height: 1.15;
+  margin: 18px 0 10px;
+  font-weight: 900;
 }
 
-.black-friday-banner p{
-  color:#f1f1f1;
-  font-size:17px;
-  margin-bottom:25px;
+.black-friday-banner h3 {
+  color: white;
+  font-size: clamp(20px, 3vw, 27px);
+  margin: 12px 0;
 }
 
-.bf-button{
-  display:inline-block;
-  background:#ffb000;
-  color:#111;
-  padding:14px 28px;
-  border-radius:7px;
-  font-weight:900;
-  text-decoration:none;
+.black-friday-banner p {
+  color: #e8edf4;
+  font-size: 16px;
+  margin: 12px auto 25px;
+  max-width: 650px;
+  line-height: 1.6;
 }
 
-.bf-button:hover{
-  background:#fff;
+.bf-showcase {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 35px;
+  margin: 28px auto;
+  max-width: 650px;
 }
 
-.bf-note{
-  margin-top:18px;
-  color:#ccc;
-  font-size:12px;
+.bf-trolley {
+  font-size: clamp(85px, 15vw, 135px);
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,.3));
+}
+
+.bf-appliances {
+  display: flex;
+  gap: 18px;
+}
+
+.bf-appliance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 14px;
+  padding: 18px 14px;
+  font-size: 48px;
+}
+
+.bf-appliance span {
+  color: #ffb45e;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.bf-loading {
+  color: #ffb45e;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 22px 0;
+}
+
+.bf-button {
+  display: inline-block;
+  background: #ff9b21;
+  color: #102b4e;
+  padding: 14px 28px;
+  border-radius: 7px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: .2s;
+}
+
+.bf-button:hover {
+  background: white;
+  transform: translateY(-2px);
+}
+
+.bf-note {
+  margin-top: 18px;
+  color: #d7e0eb;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .bf-showcase {
+    gap: 12px;
+  }
+
+  .bf-appliances {
+    gap: 8px;
+  }
+
+  .bf-appliance {
+    padding: 12px 8px;
+    font-size: 36px;
+  }
+
+  .bf-appliance span {
+    font-size: 8px;
+  }
 }
   .container{max-width:1200px;margin:auto;padding:35px 5%}
 .section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
