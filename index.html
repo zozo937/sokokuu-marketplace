@@ -1291,6 +1291,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 loadMySellerProducts(user.id);
 loadSellerOrders(user.id);
 loadSellerDeliveryZones(user.id); 
+loadSellerCollectionAddress(user.id);
   } else if (seller.status === 'pending') {
     message.textContent = 'Your seller application is pending approval. You can add products once approved.';
   } else {
