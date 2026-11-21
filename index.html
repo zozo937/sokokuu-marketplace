@@ -2000,6 +2000,48 @@ document.getElementById('sellerDeliveryZoneForm')
   });
 
   
+  
+async function loadSellerCollectionAddress(userId) {
+  const { data, error } = await supabaseClient
+    .from('seller_profiles')
+    .select('collection_address')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Collection address loading failed:', error.message);
+    return;
+  }
+
+  document.getElementById('sellerCollectionAddress').value =
+    data?.collection_address || '';
+}
+
+document.getElementById('sellerCollectionForm')
+  .addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const message = document.getElementById('sellerCollectionMessage');
+    const address = document.getElementById('sellerCollectionAddress')
+      .value.trim();
+
+    message.textContent = 'Saving collection address...';
+
+    const { error } = await supabaseClient.rpc(
+      'seller_update_collection_address',
+      {
+        p_collection_address: address
+      }
+    );
+
+    if (error) {
+      message.textContent = 'Could not save address: ' + error.message;
+      return;
+    }
+
+    message.textContent = 'Collection address saved successfully!';
+  });
+
   async function checkUserSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
