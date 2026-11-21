@@ -1414,6 +1414,13 @@ quantity,
 agreed_unit_price,
 delivery_fee,
 delivery_method,
+buyer_county,
+buyer_town,
+buyer_estate,
+buyer_street_address,
+buyer_landmark,
+buyer_phone,
+seller_collection_address_snapshot,
 payment_method,
 payment_instructions_snapshot,
 payment_status,
@@ -1471,6 +1478,29 @@ details.textContent =
 
 item.appendChild(details);
 
+const addressDetails = document.createElement('p');
+
+if (/collection/i.test(order.delivery_method || '')) {
+  addressDetails.textContent =
+    'Collection address: ' +
+    (order.seller_collection_address_snapshot || 'Not available') +
+    ' | Buyer phone: ' + (order.buyer_phone || 'Not provided');
+} else {
+  addressDetails.textContent =
+    'Delivery address: ' +
+    [
+      order.buyer_street_address,
+      order.buyer_estate,
+      order.buyer_town,
+      order.buyer_county
+    ].filter(Boolean).join(', ') +
+    ' | Landmark: ' + (order.buyer_landmark || 'Not provided') +
+    ' | Buyer phone: ' + (order.buyer_phone || 'Not provided');
+}
+
+item.appendChild(addressDetails);
+
+    
   if (/collection/i.test(order.delivery_method || '')) {
   const collectionNote = document.createElement('p');
   collectionNote.textContent = 'Payment: Pay the seller when collecting your order.';
@@ -1564,6 +1594,13 @@ quantity,
 agreed_unit_price,
 delivery_fee,
 delivery_method,
+buyer_county,
+buyer_town,
+buyer_estate,
+buyer_street_address,
+buyer_landmark,
+buyer_phone,
+seller_collection_address_snapshot,
 payment_method,
 payment_instructions_snapshot,
 payment_status,
@@ -1679,6 +1716,27 @@ updateButton.onclick = async function() {
 
 item.append(details);
 
+const buyerAddress = document.createElement('p');
+
+buyerAddress.textContent =
+  'Buyer phone: ' + (order.buyer_phone || 'Not provided') +
+  (
+    /collection/i.test(order.delivery_method || '')
+      ? ' | Collection address: ' +
+        (order.seller_collection_address_snapshot || 'Not available')
+      : ' | Delivery address: ' +
+        [
+          order.buyer_street_address,
+          order.buyer_estate,
+          order.buyer_town,
+          order.buyer_county
+        ].filter(Boolean).join(', ') +
+        ' | Landmark: ' + (order.buyer_landmark || 'Not provided')
+  );
+
+item.appendChild(buyerAddress);
+
+      
 if (order.payment_status !== 'paid') {
   const confirmPaymentButton = document.createElement('button');
   confirmPaymentButton.type = 'button';
