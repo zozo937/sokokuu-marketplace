@@ -601,6 +601,23 @@ footer a:hover{color:#ffb45e}
   Your delivery zones will appear here.
 </div>
 
+
+<h3>My Collection Address</h3>
+<p>Enter the exact location where buyers can collect their orders.</p>
+
+<form id="sellerCollectionForm">
+  <label for="sellerCollectionAddress">Collection Address</label>
+  <textarea
+    id="sellerCollectionAddress"
+    placeholder="Enter building, street, town and nearby landmark"
+    required
+  ></textarea>
+
+  <button type="submit">Save Collection Address</button>
+</form>
+
+<p id="sellerCollectionMessage" role="status"></p>
+
       <h3>Add a New Product</h3>
 
       <form id="sellerProductForm">
