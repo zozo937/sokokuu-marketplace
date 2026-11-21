@@ -548,7 +548,7 @@ footer a:hover{color:#ffb45e}
     required
   ></textarea>
 
- <label for="sellerDeliveryFee">Delivery Fee (KES)</label>
+ <label for="sellerDeliveryFee">Nationwide Delivery Fee (KES)</label>
 <input
   type="number"
   id="sellerDeliveryFee"
@@ -561,47 +561,6 @@ footer a:hover{color:#ffb45e}
 </form>
 <p id="sellerPaymentMessage" role="status"></p> 
  
-<h3>My Delivery Zones</h3>
-<p>Set different delivery charges for different towns and areas.</p>
-
-<form id="sellerDeliveryZoneForm">
-
-  <label for="deliveryZoneCounty">County</label>
-  <input
-    type="text"
-    id="deliveryZoneCounty"
-    placeholder="e.g. Machakos"
-    required
-  >
-
-  <label for="deliveryZoneTown">Town or Area</label>
-  <input
-    type="text"
-    id="deliveryZoneTown"
-    placeholder="e.g. Machakos Town"
-    required
-  >
-
-  <label for="deliveryZoneFee">Delivery Fee (KES)</label>
-  <input
-    type="number"
-    id="deliveryZoneFee"
-    min="0"
-    step="0.01"
-    placeholder="e.g. 150"
-    required
-  >
-
-  <button type="submit">Add Delivery Zone</button>
-</form>
-
-<p id="deliveryZoneMessage" role="status"></p>
-
-<div id="sellerDeliveryZoneList">
-  Your delivery zones will appear here.
-</div>
-
-
 <h3>My Collection Address</h3>
 <p>Enter the exact location where buyers can collect their orders.</p>
 
@@ -1151,31 +1110,7 @@ orderButton.onclick = async function() {
     buyerLandmark = prompt('Enter a nearby landmark (optional):');
     if (buyerLandmark === null) return;
 
-    const { data: zone, error: zoneError } = await supabaseClient
-      .from('seller_delivery_zones')
-      .select('delivery_fee')
-      .eq('seller_id', product.seller_id)
-      .ilike('county', buyerCounty.trim())
-      .ilike('town', buyerTown.trim())
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (zoneError) {
-      alert('Could not verify the delivery area. Please try again or contact the seller.');
-      console.error('Delivery zone lookup failed:', zoneError.message);
-      return;
-    }
-
-    if (!zone) {
-      alert(
-        'Sorry, this seller does not currently offer delivery to ' +
-        buyerTown.trim() + ', ' + buyerCounty.trim() +
-        '. You can try Collection instead.'
-      );
-      return;
-    }
-
-    orderDeliveryFee = Number(zone.delivery_fee);
+  orderDeliveryFee = Number(sellerDetails.delivery_fee || 0);
   } else {
     if (!sellerDetails.collection_address) {
       alert('This seller has not provided a collection address yet.');
@@ -1388,7 +1323,6 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     productArea.style.display = 'block';
 loadMySellerProducts(user.id);
 loadSellerOrders(user.id);
-loadSellerDeliveryZones(user.id); 
 loadSellerCollectionAddress(user.id);
   } else if (seller.status === 'pending') {
     message.textContent = 'Your seller application is pending approval. You can add products once approved.';
@@ -2025,139 +1959,6 @@ p_delivery_fee: deliveryFee
 });
 
 
-async function loadSellerDeliveryZones(userId) {
-  const container = document.getElementById('sellerDeliveryZoneList');
-
-  container.textContent = 'Loading delivery zones...';
-
-  const { data: zones, error } = await supabaseClient
-    .from('seller_delivery_zones')
-    .select('*')
-    .eq('seller_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    container.textContent = 'Could not load delivery zones: ' + error.message;
-    return;
-  }
-
-  container.replaceChildren();
-
-  if (!zones || zones.length === 0) {
-    container.textContent = 'No delivery zones added yet.';
-    return;
-  }
-
-  zones.forEach(zone => {
-    const item = document.createElement('div');
-    item.style.padding = '12px';
-    item.style.marginBottom = '10px';
-    item.style.border = '1px solid #ddd';
-    item.style.borderRadius = '8px';
-
-    const details = document.createElement('span');
-    details.textContent =
-      zone.town + ', ' + zone.county +
-      ' — KES ' + Number(zone.delivery_fee).toLocaleString() +
-      (zone.is_active ? ' (Active)' : ' (Inactive)');
-
-    const toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.textContent = zone.is_active ? 'Deactivate' : 'Activate';
-
-    toggle.onclick = async function() {
-      toggle.disabled = true;
-
-      const { error } = await supabaseClient
-        .from('seller_delivery_zones')
-        .update({ is_active: !zone.is_active })
-        .eq('id', zone.id)
-        .eq('seller_id', userId);
-
-      if (error) {
-        alert('Could not update zone: ' + error.message);
-        toggle.disabled = false;
-        return;
-      }
-
-      loadSellerDeliveryZones(userId);
-    };
-
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.textContent = 'Delete';
-    remove.style.marginLeft = '8px';
-
-    remove.onclick = async function() {
-      if (!confirm('Delete this delivery zone?')) return;
-
-      const { error } = await supabaseClient
-        .from('seller_delivery_zones')
-        .delete()
-        .eq('id', zone.id)
-        .eq('seller_id', userId);
-
-      if (error) {
-        alert('Could not delete zone: ' + error.message);
-        return;
-      }
-
-      loadSellerDeliveryZones(userId);
-    };
-
-    item.append(details, document.createTextNode(' '), toggle, remove);
-    container.appendChild(item);
-  });
-}
-
-document.getElementById('sellerDeliveryZoneForm')
-  .addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const message = document.getElementById('deliveryZoneMessage');
-    message.textContent = 'Saving delivery zone...';
-
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    const user = sessionData.session?.user;
-
-    if (!user) {
-      message.textContent = 'Please log in again.';
-      return;
-    }
-
-    const county = document.getElementById('deliveryZoneCounty').value.trim();
-    const town = document.getElementById('deliveryZoneTown').value.trim();
-    const deliveryFee = Number(
-      document.getElementById('deliveryZoneFee').value
-    );
-
-    if (!county || !town || !Number.isFinite(deliveryFee) || deliveryFee < 0) {
-      message.textContent = 'Enter a valid county, town and delivery fee.';
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from('seller_delivery_zones')
-      .insert({
-        seller_id: user.id,
-        county: county,
-        town: town,
-        delivery_fee: deliveryFee
-      });
-
-    if (error) {
-      message.textContent = 'Could not save zone: ' + error.message;
-      return;
-    }
-
-    message.textContent = 'Delivery zone added successfully!';
-    document.getElementById('sellerDeliveryZoneForm').reset();
-
-    loadSellerDeliveryZones(user.id);
-  });
-
-  
-  
 async function loadSellerCollectionAddress(userId) {
   const { data, error } = await supabaseClient
     .from('seller_profiles')
