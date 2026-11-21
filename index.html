@@ -1136,42 +1136,60 @@ orderButton.onclick = async function() {
 
   if (!confirm(paymentSummary)) return;
 
-  const { error } = await supabaseClient
-    .from('orders')
-    .insert({
-      buyer_id: buyerId,
-      seller_id: product.seller_id,
-      product_id: product.id,
-      quantity: quantity,
-      agreed_unit_price: displayPrice,
-      delivery_fee: orderDeliveryFee,
-      delivery_method: finalDeliveryMethod,
-      buyer_county: buyerCounty,
-      buyer_town: buyerTown,
-      buyer_estate: buyerEstate?.trim() || null,
-      buyer_street_address: buyerStreetAddress?.trim() || null,
-      buyer_landmark: buyerLandmark?.trim() || null,
-      buyer_phone: buyerPhone.trim(),
-      seller_collection_address_snapshot: collectionAddressSnapshot,
-      payment_method: sellerDetails.payment_method || null,
-      payment_instructions_snapshot: sellerDetails.payment_instructions || null,
-      status: 'pending',
-      payment_status: 'unpaid',
-      mpesa_transaction_code: null,
-      payment_confirmed_at: null
-    });
 
-  if (error) {
-    alert('Order could not be placed: ' + error.message);
-    console.error('Order placement failed:', error);
-    return;
-  }
+const { data: newOrder, error } = await supabaseClient
+  .from('orders')
+  .insert({
+    buyer_id: buyerId,
+    seller_id: product.seller_id,
+    product_id: product.id,
+    quantity: quantity,
+    agreed_unit_price: displayPrice,
+    delivery_fee: orderDeliveryFee,
+    delivery_method: finalDeliveryMethod,
+    buyer_county: buyerCounty,
+    buyer_town: buyerTown,
+    buyer_estate: buyerEstate?.trim() || null,
+    buyer_street_address: buyerStreetAddress?.trim() || null,
+    buyer_landmark: buyerLandmark?.trim() || null,
+    buyer_phone: buyerPhone.trim(),
+    seller_collection_address_snapshot: collectionAddressSnapshot,
+    payment_method: 'M-Pesa STK Push (SOKOKUU)',
+    payment_instructions_snapshot: 'Pay through the SOKOKUU M-Pesa payment prompt.',
+    status: 'pending',
+    payment_status: 'unpaid',
+    mpesa_transaction_code: null,
+    payment_confirmed_at: null
+  })
+  .select('id')
+  .single();
 
-  alert('Your order has been placed successfully!');
+if (error) {
+  alert('Order could not be placed: ' + error.message);
+  console.error('Order placement failed:', error);
+  return;
+}
+
+const { data: paymentData, error: paymentError } =
+  await supabaseClient.functions.invoke('mpesa-stk-push', {
+    body: {
+      order_id: newOrder.id
+    }
+  });
+
+if (paymentError || !paymentData?.success) {
+  console.error('STK Push error:', paymentError || paymentData);
+  alert(
+    'Your order was saved, but the M-Pesa prompt could not be started. Please contact SOKOKUU support before attempting another payment.'
+  );
+  return;
+}
+
+alert('Your order has been placed! Check your phone for the M-Pesa payment prompt and enter your M-Pesa PIN.');
+
 };
 
-
-info.append(title, price, location, orderButton);
+    info.append(title, price, location, orderButton);
     article.append(info);
     grid.appendChild(article);
   });
