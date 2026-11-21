@@ -1055,6 +1055,7 @@ if (hasActiveOffer) {
 orderButton.textContent = 'Order Product';
 orderButton.type = 'button';
 
+
 orderButton.onclick = async function() {
   const { data: sessionData } = await supabaseClient.auth.getSession();
 
@@ -1065,21 +1066,7 @@ orderButton.onclick = async function() {
 
   const buyerId = sessionData.session.user.id;
 
-  const { data: checkoutDetails, error: checkoutError } =
-  await supabaseClient.rpc('get_seller_checkout_details_v3', {
-    p_seller_id: product.seller_id
-  });
-
-if (checkoutError || !checkoutDetails || checkoutDetails.length === 0) {
-  alert('Seller payment details are currently unavailable.');
-  return;
-}
-
-const sellerDetails = checkoutDetails[0];
- console.log('Seller checkout details:', sellerDetails);
-  const quantityInput = prompt(
-    'Enter the quantity you want to order:'
-  );
+  const quantityInput = prompt('Enter the quantity you want to order:');
 
   if (quantityInput === null) return;
 
@@ -1090,28 +1077,130 @@ const sellerDetails = checkoutDetails[0];
     return;
   }
 
-  alert(
-  'SELLER PAYMENT DETAILS\n\n' +
-  'Payment method: ' + (sellerDetails.payment_method || 'Contact seller') +
-  '\nInstructions: ' + (sellerDetails.payment_instructions || 'Contact seller') +
-  '\nDelivery coverage: ' + (sellerDetails.delivery_coverage || 'Confirm with seller') +
-  '\nDelivery fee: KES ' + Number(sellerDetails.delivery_fee || 0)
-);
+  const { data: checkoutDetails, error: checkoutError } =
+    await supabaseClient.rpc('get_seller_checkout_details_v3', {
+      p_seller_id: product.seller_id
+    });
 
-const deliveryMethod = prompt(
-  'Enter your preferred delivery method (e.g. Delivery or Collection):'
-);
+  if (checkoutError || !checkoutDetails || checkoutDetails.length === 0) {
+    alert('Seller checkout details are currently unavailable.');
+    return;
+  }
 
-if (deliveryMethod === null || !deliveryMethod.trim()) {
-  alert('Please enter a delivery method to continue.');
-  return;
-}
-const selectedDeliveryMethod = deliveryMethod.trim();
+  const sellerDetails = checkoutDetails[0];
 
-const orderDeliveryFee =
-  /collection/i.test(selectedDeliveryMethod)
-    ? 0
-    : Number(sellerDetails.delivery_fee || 0); 
+  const deliveryChoice = prompt(
+    'Choose your preferred option:\n\n' +
+    '1. Delivery\n' +
+    '2. Collection\n\n' +
+    'Enter Delivery or Collection:'
+  );
+
+  if (deliveryChoice === null) return;
+
+  const selectedDeliveryMethod = deliveryChoice.trim().toLowerCase();
+
+  if (
+    selectedDeliveryMethod !== 'delivery' &&
+    selectedDeliveryMethod !== 'collection'
+  ) {
+    alert('Please enter either Delivery or Collection.');
+    return;
+  }
+
+  const buyerPhone = prompt('Enter your phone number:');
+
+  if (buyerPhone === null || !buyerPhone.trim()) {
+    alert('A phone number is required.');
+    return;
+  }
+
+  let buyerCounty = null;
+  let buyerTown = null;
+  let buyerEstate = null;
+  let buyerStreetAddress = null;
+  let buyerLandmark = null;
+  let collectionAddressSnapshot = null;
+  let orderDeliveryFee = 0;
+  let finalDeliveryMethod = 'Collection';
+
+  if (selectedDeliveryMethod === 'delivery') {
+    finalDeliveryMethod = 'Delivery';
+
+    buyerCounty = prompt('Enter your county:');
+    if (buyerCounty === null || !buyerCounty.trim()) {
+      alert('County is required.');
+      return;
+    }
+
+    buyerTown = prompt('Enter your town:');
+    if (buyerTown === null || !buyerTown.trim()) {
+      alert('Town is required.');
+      return;
+    }
+
+    buyerEstate = prompt('Enter your estate or neighbourhood (optional):');
+    if (buyerEstate === null) return;
+
+    buyerStreetAddress = prompt('Enter your street, building or house address:');
+    if (buyerStreetAddress === null || !buyerStreetAddress.trim()) {
+      alert('Your street or building address is required.');
+      return;
+    }
+
+    buyerLandmark = prompt('Enter a nearby landmark (optional):');
+    if (buyerLandmark === null) return;
+
+    const { data: zone, error: zoneError } = await supabaseClient
+      .from('seller_delivery_zones')
+      .select('delivery_fee')
+      .eq('seller_id', product.seller_id)
+      .ilike('county', buyerCounty.trim())
+      .ilike('town', buyerTown.trim())
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (zoneError) {
+      alert('Could not verify the delivery area. Please try again or contact the seller.');
+      console.error('Delivery zone lookup failed:', zoneError.message);
+      return;
+    }
+
+    if (!zone) {
+      alert(
+        'Sorry, this seller does not currently offer delivery to ' +
+        buyerTown.trim() + ', ' + buyerCounty.trim() +
+        '. You can try Collection instead.'
+      );
+      return;
+    }
+
+    orderDeliveryFee = Number(zone.delivery_fee);
+  } else {
+    if (!sellerDetails.collection_address) {
+      alert('This seller has not provided a collection address yet.');
+      return;
+    }
+
+    collectionAddressSnapshot = sellerDetails.collection_address;
+  }
+
+  const paymentSummary =
+    'SELLER PAYMENT DETAILS\n\n' +
+    'Payment method: ' + (sellerDetails.payment_method || 'Contact seller') +
+    '\nPayment instructions: ' +
+    (sellerDetails.payment_instructions || 'Contact seller') +
+    '\nDelivery method: ' + finalDeliveryMethod +
+    '\nDelivery fee: KES ' + orderDeliveryFee.toLocaleString() +
+    (finalDeliveryMethod === 'Collection'
+      ? '\nCollection address: ' + collectionAddressSnapshot
+      : '\nDelivery destination: ' + buyerStreetAddress +
+        ', ' + buyerTown + ', ' + buyerCounty) +
+    '\nPhone number: ' + buyerPhone.trim() +
+    '\n\nConfirm that you want to place this order.';
+
+  if (!confirm(paymentSummary)) return;
+
   const { error } = await supabaseClient
     .from('orders')
     .insert({
@@ -1119,24 +1208,33 @@ const orderDeliveryFee =
       seller_id: product.seller_id,
       product_id: product.id,
       quantity: quantity,
-     agreed_unit_price: displayPrice, 
+      agreed_unit_price: displayPrice,
       delivery_fee: orderDeliveryFee,
-delivery_method: deliveryMethod.trim(),
-payment_method: sellerDetails.payment_method || null,
-payment_instructions_snapshot: sellerDetails.payment_instructions || null,
-status: 'pending',
-payment_status: 'unpaid',
-mpesa_transaction_code: null,
-payment_confirmed_at: null
+      delivery_method: finalDeliveryMethod,
+      buyer_county: buyerCounty,
+      buyer_town: buyerTown,
+      buyer_estate: buyerEstate?.trim() || null,
+      buyer_street_address: buyerStreetAddress?.trim() || null,
+      buyer_landmark: buyerLandmark?.trim() || null,
+      buyer_phone: buyerPhone.trim(),
+      seller_collection_address_snapshot: collectionAddressSnapshot,
+      payment_method: sellerDetails.payment_method || null,
+      payment_instructions_snapshot: sellerDetails.payment_instructions || null,
+      status: 'pending',
+      payment_status: 'unpaid',
+      mpesa_transaction_code: null,
+      payment_confirmed_at: null
     });
 
   if (error) {
     alert('Order could not be placed: ' + error.message);
+    console.error('Order placement failed:', error);
     return;
   }
 
   alert('Your order has been placed successfully!');
 };
+
 
 info.append(title, price, location, orderButton);
     article.append(info);
