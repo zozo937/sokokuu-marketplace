@@ -343,6 +343,32 @@ footer a:hover{color:#ffb45e}
   box-shadow: 0 2px 7px rgba(0,0,0,.2);
 }
 
+
+.product {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.product:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.product-details {
+  display: none;
+  padding-top: 12px;
+  line-height: 1.6;
+}
+
+.product.expanded .product-details {
+  display: block;
+}
+
+.product-expand-hint {
+  font-size: 12px;
+  color: #777;
+  margin-top: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -1188,6 +1214,43 @@ if (paymentError || !paymentData?.success) {
 alert('Your order has been placed! Check your phone for the M-Pesa payment prompt and enter your M-Pesa PIN.');
 
 };
+
+   
+    // Expandable product details
+    const details = document.createElement('div');
+    details.className = 'product-details';
+
+    const description = document.createElement('p');
+    description.textContent = product.description || 'No product description provided.';
+
+    const category = document.createElement('p');
+    category.textContent = 'Category: ' + (product.category || 'Not specified');
+
+    const stock = document.createElement('p');
+    stock.textContent = 'Available stock: ' + product.stock;
+
+    const hint = document.createElement('div');
+    hint.className = 'product-expand-hint';
+    hint.textContent = 'Click to view less';
+
+    details.append(description, category, stock, hint);
+
+    const expandHint = document.createElement('div');
+    expandHint.className = 'product-expand-hint';
+    expandHint.textContent = 'Click to view product details ▼';
+
+    info.append(expandHint, details);
+
+    article.addEventListener('click', function() {
+      const isExpanded = article.classList.toggle('expanded');
+      expandHint.textContent = isExpanded
+        ? 'Click to view less ▲'
+        : 'Click to view product details ▼';
+    });
+
+    orderButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+    });
 
     info.append(title, price, location, orderButton);
     article.append(info);
