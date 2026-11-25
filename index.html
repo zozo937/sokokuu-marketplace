@@ -515,6 +515,15 @@ footer a:hover{color:#ffb45e}
         <option value="seller">Sell products</option>
       </select>
 
+     <div id="sellerDetails" style="display:none">
+  <input id="businessName" type="text" placeholder="Shop / Business name">
+
+  <input id="sellerCounty" type="text" placeholder="County">
+
+  <input id="sellerTown" type="text" placeholder="Town">
+
+  <input id="shopLocation" type="text" placeholder="Shop / Branch location">
+</div>
       <button type="submit">Create Account</button>
     </form>
 
@@ -1288,7 +1297,23 @@ window.logoutUser = async function() {
   showAccountForm('login');
 };
 
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
+const accountTypeSelect = document.getElementById('accountType');
+const sellerDetails = document.getElementById('sellerDetails');
+
+function updateSellerFields() {
+  const isSeller = accountTypeSelect.value === 'seller';
+
+  sellerDetails.style.display = isSeller ? 'block' : 'none';
+
+  document.getElementById('businessName').required = isSeller;
+  document.getElementById('sellerCounty').required = isSeller;
+  document.getElementById('sellerTown').required = isSeller;
+  document.getElementById('shopLocation').required = isSeller;
+}
+
+accountTypeSelect.addEventListener('change', updateSellerFields);
+updateSellerFields();
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const message = document.getElementById('accountMessage');
@@ -1298,11 +1323,15 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     email: document.getElementById('registerEmail').value,
     password: document.getElementById('registerPassword').value,
     options: {
-      data: {
-        full_name: document.getElementById('registerName').value,
-        phone: document.getElementById('registerPhone').value,
-        account_type: document.getElementById('accountType').value
-      }
+  data: {
+  full_name: document.getElementById('registerName').value,
+  phone: document.getElementById('registerPhone').value,
+  account_type: document.getElementById('accountType').value,
+  business_name: document.getElementById('businessName').value.trim(),
+  county: document.getElementById('sellerCounty').value.trim(),
+  town: document.getElementById('sellerTown').value.trim(),
+  shop_location: document.getElementById('shopLocation').value.trim()
+}
     }
   });
 
