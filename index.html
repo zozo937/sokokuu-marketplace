@@ -654,7 +654,7 @@ footer a:hover{color:#ffb45e}
   id="productImagePreview"
   src=""
   alt="Product photo preview"
-  style="display:none; width:200px; height:150px; object-fit:cover; margin-top:10px; border-radius:8px;"
+  style="display:none; width:200px; height:150px; object-fit:contain; margin-top:10px; border-radius:8px;"
 >    
         <button type="submit">Add Product</button>
       </form>
@@ -973,7 +973,7 @@ image.src = product.image_url || 'https://placehold.co/400x300?text=No+Product+I
 image.alt = product.title;
 image.style.width = '100%';
 image.style.height = '200px';
-image.style.objectFit = 'cover';
+image.style.objectFit = 'contain';
 image.style.borderRadius = '8px';
 
 const imageWrap = document.createElement('div');
@@ -1859,7 +1859,7 @@ productImage.src = product.image_url || 'https://placehold.co/400x300?text=No+Pr
 productImage.alt = product.title;
 productImage.style.width = '150px';
 productImage.style.height = '120px';
-productImage.style.objectFit = 'cover';
+productImage.style.objectFit = 'contain';
 productImage.style.borderRadius = '8px';
     const title = document.createElement('h4');
     title.textContent = product.title;
