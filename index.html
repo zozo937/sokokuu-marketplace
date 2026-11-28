@@ -1911,7 +1911,52 @@ soldOutButton.onclick = async function() {
   loadMySellerProducts(userId);
 };
 
-item.append(title, details, publishButton, soldOutButton);
+const featureButton = document.createElement('button');
+featureButton.textContent = 'Feature This Product';
+featureButton.type = 'button';
+
+featureButton.onclick = async function() {
+  const duration = prompt(
+    'Choose duration:\n7 days = KSh 150\n14 days = KSh 250\n30 days = KSh 450\n\nEnter 7, 14 or 30:'
+  );
+
+  if (!['7', '14', '30'].includes(duration)) {
+    alert('Please choose 7, 14 or 30 days.');
+    return;
+  }
+
+  const phone = prompt('Enter your M-Pesa phone number (2547XXXXXXXX):');
+
+  if (!phone) {
+    alert('Phone number is required.');
+    return;
+  }
+
+  const { data, error } = await supabaseClient.functions.invoke(
+    'featured-listing-stk',
+    {
+      body: {
+        product_id: product.id,
+        duration_days: Number(duration),
+        payment_method: 'stk',
+        phone: phone.trim()
+      }
+    }
+  );
+
+  if (error) {
+    alert('Payment request failed: ' + error.message);
+    return;
+  }
+
+  if (!data?.success) {
+    alert(data?.error || 'Could not start payment.');
+    return;
+  }
+
+  alert('Payment request sent. Check your phone for the M-Pesa prompt.');
+};
+   item.append(title, details, publishButton, soldOutButton, featureButton);
     container.appendChild(item);
   });
 } 
