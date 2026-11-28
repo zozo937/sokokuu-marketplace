@@ -812,7 +812,7 @@ function updateProducts(){
  const term=document.getElementById("searchInput").value.toLowerCase().trim();
  let shown=0;
  document.querySelectorAll(".product").forEach(card=>{
-  const matchesCategory=activeCategory==="all"||card.dataset.category===activeCategory;
+  const matchesCategory=activeCategory==="all"||(card.dataset.category||"").trim().toLowerCase()===activeCategory.trim().toLowerCase();
   const matchesSearch=(card.dataset.name+" "+card.innerText).toLowerCase().includes(term);
   card.style.display=matchesCategory&&matchesSearch?"":"none";
   if(matchesCategory&&matchesSearch)shown++;
