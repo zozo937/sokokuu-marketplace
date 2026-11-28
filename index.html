@@ -966,7 +966,9 @@ async function loadHotDeals() {
   products.forEach(product => {
     const article = document.createElement('article');
     article.className = 'product';
-
+article.dataset.category = (product.category || '').trim();
+article.dataset.name = product.title || '';
+    
    const image = document.createElement('img');
 image.className = 'product-image';
 image.src = product.image_url || 'https://placehold.co/400x300?text=No+Product+Image';
